@@ -8,8 +8,11 @@ const CORS = {
   'Cache-Control': 'no-store, no-transform',
 };
 const MAX = 100 * 1024 * 1024;
-const BLOCK = new Uint8Array(1 << 20);
-for (let o = 0; o < BLOCK.length; o += 65536) crypto.getRandomValues(BLOCK.subarray(o, o + 65536));
+let BLOCK = null; // random data, created lazily (Workers disallow random values at global scope)
+function getBlock() {
+  if (!BLOCK) { BLOCK = new Uint8Array(1 << 20); for (let o = 0; o < BLOCK.length; o += 65536) crypto.getRandomValues(BLOCK.subarray(o, o + 65536)); }
+  return BLOCK;
+}
 
 export default {
   async fetch(req) {
@@ -25,11 +28,12 @@ export default {
 
     if (url.pathname === '/down') {
       let left = Math.min(parseInt(url.searchParams.get('bytes')) || 25e6, MAX);
+      const BLK = getBlock();
       const body = new ReadableStream({
         pull(ctrl) {
           if (left <= 0) return ctrl.close();
-          const n = Math.min(left, BLOCK.length); left -= n;
-          ctrl.enqueue(n === BLOCK.length ? BLOCK.slice() : BLOCK.slice(0, n));
+          const n = Math.min(left, BLK.length); left -= n;
+          ctrl.enqueue(n === BLK.length ? BLK.slice() : BLK.slice(0, n));
         },
       });
       return new Response(body, { headers: { ...h, 'Content-Type': 'application/octet-stream', 'Content-Encoding': 'identity' } });
