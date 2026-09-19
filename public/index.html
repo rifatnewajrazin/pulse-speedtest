@@ -463,7 +463,7 @@ async function run(){
     setSpeed('dl',dl); $('pDl').textContent=dlPing.toFixed(0)+' ms';
 
     UPFAIL=0;UPERR=0; $('status').textContent='Testing upload…'; const stopUl=loadedPinger();
-    const uls=await uploadTest(3,7,1.5,m=>{gauge(m,'','Upload');chartData.ul.push(m);drawChart();});
+    const uls=await uploadTest(4,8,2,m=>{gauge(m,'','Upload');chartData.ul.push(m);drawChart();});
     const up=stopUl(); const ulPing=median(up.arr)||idleMed; const ul=median(uls)||0;
     if(!(ul>0)) $('ulSub').textContent=UPERR?'Upload blocked by server (HTTP '+UPERR+')':UPFAIL?'Upload connection failed — retry':'No upload data measured';
     setSpeed('ul',ul); $('pUl').textContent=ulPing.toFixed(0)+' ms';
