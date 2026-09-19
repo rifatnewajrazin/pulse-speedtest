@@ -115,6 +115,23 @@ html{scroll-behavior:smooth}
 body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
 .gauge svg,canvas{transform:translateZ(0)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+/* symmetric single-column hero */
+.hero{grid-template-columns:1fr!important;gap:26px;justify-items:center}
+.hero>div{max-width:920px}
+.gauge{max-width:380px}
+.go{width:auto;min-width:220px;margin:14px auto 0}
+.stats{grid-template-columns:repeat(4,1fr)}
+@media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.go{width:100%}}
+#isp{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));justify-items:center;text-align:center}
+#isp>div{flex:none!important;min-width:0!important}
+.grid{justify-content:center}
+/* glow gauge */
+#arc{fill:none;stroke:#f28a2e;stroke-width:5;stroke-linecap:round;transform:rotate(135deg);transform-origin:110px 110px;opacity:0}
+#arcGlow{filter:blur(6px);stroke-width:9;opacity:0}
+.gauge.live #arcGlow{animation:breathe 1.6s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.55}}
+.gval b{text-shadow:0 0 24px #f28a2e66;transition:text-shadow .4s}
 </style>
 </head>
 <body>
@@ -138,6 +155,8 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
         <circle cx="110" cy="110" r="106" fill="none" stroke="#ffffff22"/>
         <circle cx="110" cy="110" r="70" fill="url(#gl)" stroke="#ffffff30"/>
         <circle cx="110" cy="110" r="70" fill="none" stroke="#f28a2e" stroke-opacity=".25" stroke-width="10" style="filter:blur(10px)"/>
+        <circle id="arcGlow" class="arcs" cx="110" cy="110" r="93" pathLength="100" stroke="#f28a2e" fill="none" stroke-dasharray="0 100"/>
+        <circle id="arc" class="arcs" cx="110" cy="110" r="93" pathLength="100" stroke-dasharray="0 100"/>
         <g id="ticks"></g></svg>
       <div class="gval"><em id="phase">Ready</em><b id="big">0</b><span id="bigUnit">Mbps</span></div>
     </div>
@@ -255,14 +274,20 @@ const NT=72; let tickEls=[];
 function buildTicks(){ const g=$('ticks'); const ns='http://www.w3.org/2000/svg';
   for(let i=0;i<NT;i++){ const ang=(135+270*i/(NT-1))*Math.PI/180, big=i%6===0, r1=big?84:88, r2=98; const l=document.createElementNS(ns,'line');
     l.setAttribute('x1',110+r1*Math.cos(ang));l.setAttribute('y1',110+r1*Math.sin(ang));l.setAttribute('x2',110+r2*Math.cos(ang));l.setAttribute('y2',110+r2*Math.sin(ang));l.setAttribute('class','tk');g.appendChild(l);tickEls.push(l);} }
-let _g=null,_raf=0;
-function gauge(mbps, label, phase){ _g=[mbps,label,phase]; if(!_raf) _raf=requestAnimationFrame(()=>{_raf=0; const a=_g; _gauge(a[0],a[1],a[2]);}); }
-let _on=-1;
-function _gauge(mbps, label, phase){
-  const f = Math.min(1, Math.log10(1+mbps)/Math.log10(1+2000)), on=Math.round(f*NT);
-  if(on!==_on){ const lo=Math.min(on,_on<0?0:_on), hi=Math.max(on,_on<0?NT:_on); for(let i=lo;i<hi&&i<NT;i++) tickEls[i].classList.toggle('on',i<on); _on=on; }
-  const [v,u] = fmtSpeed(mbps); $('big').textContent = v; $('bigUnit').textContent = u;
-  if (phase) $('phase').textContent = phase;
+let _tgt=0,_cur=0,_raf=0,_lbl=null;
+const _c0=[242,138,46],_c1=[255,227,179];
+function gauge(mbps,label,phase){ _tgt=mbps; if(phase) $('phase').textContent=phase; if(!_raf) _raf=requestAnimationFrame(_step); }
+function _step(){
+  _cur+= (_tgt-_cur)*0.14; if(Math.abs(_tgt-_cur)<0.005*Math.max(1,_tgt)) _cur=_tgt;
+  const f=Math.min(1,Math.log10(1+_cur)/Math.log10(1+2000)), fill=f*NT;
+  for(let i=0;i<NT;i++){ const k=Math.max(0,Math.min(1,fill-i));
+    if(k!==tickEls[i]._k){ tickEls[i]._k=k; const t=i/NT, m=_c0.map((v,j)=>Math.round(v+(_c1[j]-v)*t));
+      tickEls[i].style.stroke=k?`rgba(${m},${.19+.81*k})`:''; } }
+  const d=(f*75).toFixed(2)+' 100'; $('arc').setAttribute('stroke-dasharray',d); $('arcGlow').setAttribute('stroke-dasharray',d);
+  const o=f>0?1:0; $('arc').style.opacity=o*.9; $('arcGlow').style.opacity=o*.9;
+  document.querySelector('.gauge').classList.toggle('live',f>0);
+  const [v,u]=fmtSpeed(_cur); $('big').textContent=v; $('bigUnit').textContent=u;
+  _raf=_cur===_tgt?0:requestAnimationFrame(_step);
 }
 buildTicks();
 const chartData = {dl:[],ul:[]};
