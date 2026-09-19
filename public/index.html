@@ -464,7 +464,7 @@ async function run(){
 
     UPFAIL=0;UPERR=0; $('status').textContent='Testing upload…'; const stopUl=loadedPinger();
     const uls=await uploadTest(4,8,2,m=>{gauge(m,'','Upload');chartData.ul.push(m);drawChart();});
-    const up=stopUl(); const ulPing=median(up.arr)||idleMed; const ul=median(uls)||0;
+    const up=stopUl(); const ulPing=median(up.arr)||idleMed; const ul=uls.length?uls.reduce((a,b)=>a+b,0)/uls.length:0; // mean: completions arrive in steps, median can land on a gap
     if(!(ul>0)) $('ulSub').textContent=UPERR?'Upload blocked by server (HTTP '+UPERR+')':UPFAIL?'Upload connection failed — retry':'No upload data measured';
     setSpeed('ul',ul); $('pUl').textContent=ulPing.toFixed(0)+' ms';
     const totalLost=idle.lost, totalSent=idle.total;
