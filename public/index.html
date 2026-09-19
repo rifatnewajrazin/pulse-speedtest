@@ -309,7 +309,7 @@ function drawChart(){
 const EDGE_BASE=''; let USE_EDGE=false;
 const EP=p=>USE_EDGE?EDGE_BASE+({ping:'/ping',up:'/up',ip:'/ip'}[p]):({ping:'/api/ping',up:'/api/upload',ip:'/api/ip'}[p]);
 const DLURL=()=>USE_EDGE?`${EDGE_BASE}/down?bytes=50000000&r=${Math.random()}`:`/dl.bin?r=${Math.random()}`;
-async function pickServer(){ if(!EDGE_BASE) return; try{ const ac=new AbortController(); setTimeout(()=>ac.abort(),2500); const r=await fetch(EDGE_BASE+'/ping?'+Math.random(),{cache:'no-store',signal:ac.signal}); if(r.ok||r.status===204){ USE_EDGE=true; } }catch{} }
+async function pickServer(){ if(!EDGE_BASE) return; try{ const ac=new AbortController(); setTimeout(()=>ac.abort(),2500); const r=await fetch(EDGE_BASE+'/ping?'+Math.random(),{cache:'no-store',signal:ac.signal}); if(r.ok||r.status===204){ USE_EDGE=true; SERVER.fn=null; } }catch{} }
 const SERVER={edge:null,fn:null};
 const REGIONS={DAC:'Dhaka, Bangladesh',CCU:'Kolkata, India',BOM:'Mumbai, India',MAA:'Chennai, India',SIN:'Singapore',HKG:'Hong Kong',DEL:'Delhi, India',KUL:'Kuala Lumpur',bom1:'Mumbai, India',sin1:'Singapore',hkg1:'Hong Kong',iad1:'Washington DC, USA',sfo1:'San Francisco, USA',cdg1:'Paris, France',fra1:'Frankfurt, Germany',lhr1:'London, UK',syd1:'Sydney, Australia',hnd1:'Tokyo, Japan',dxb1:'Dubai, UAE',cle1:'Cleveland, USA',pdx1:'Portland, USA',gru1:'São Paulo, Brazil',icn1:'Seoul, South Korea',kix1:'Osaka, Japan',arn1:'Stockholm, Sweden',dub1:'Dublin, Ireland',cpt1:'Cape Town, South Africa'};
 function noteServer(r){ const id=r.headers.get('x-vercel-id')||''; const p=id.split('::'); const fn=r.headers.get('x-pulse-region')||p[0]||null; SERVER.edge=p[0]||null; SERVER.fn=fn;
