@@ -354,13 +354,13 @@ function uploadTest(streams, seconds, warm, onTick){
   return new Promise(resolve=>{
     const blob=new Blob(Array.from({length:16},()=>crypto.getRandomValues(new Uint8Array(65536))),{type:'application/octet-stream'}); // 2MB (Vercel body limit is 4.5MB)
     const t0=performance.now(); const prog=new Array(streams).fill(0); let done=0, stop=false, base=new Array(streams).fill(0);
-    const samples=[]; let last=t0,lastB=0,win=[]; const xhrs=[];
+    const samples=[]; let last=t0,lastB=0,win=[]; const xhrs=[]; const hist=[];
     const total=()=>prog.reduce((a,b)=>a+b,0)+base.reduce((a,b)=>a+b,0);
     const launch=i=>{ if(stop)return; const x=new XMLHttpRequest(); xhrs[i]=x; x.open('POST',EP('up')+'?'+Math.random());
       x.upload.onprogress=e=>{prog[i]=e.loaded}; x.onload=()=>{base[i]+=prog[i];prog[i]=0;launch(i)}; x.onerror=()=>{prog[i]=0; UPFAIL++; if(!stop) setTimeout(()=>launch(i),Math.min(1500,200*UPFAIL))}; x.onreadystatechange=()=>{ if(x.readyState===4&&x.status>=400){UPFAIL++; UPERR=x.status} }; x.send(blob); };
     for(let i=0;i<streams;i++) launch(i);
     const iv=setInterval(()=>{ const now=performance.now(), b=total(); const inst=(b-lastB)*8/((now-last)/1000)/1e6; last=now;lastB=b;
-      win.push(inst); if(win.length>5)win.shift(); const sm=win.reduce((a,c)=>a+c,0)/win.length; if(now-t0>warm*1000)samples.push(sm); onTick&&onTick(sm);
+      hist.push([now,b]); while(hist.length>2&&now-hist[0][0]>2000)hist.shift(); const sm=(b-hist[0][1])*8/Math.max(1,(now-hist[0][0])/1000)/1e6; if(now-t0>warm*1000)samples.push(sm); onTick&&onTick(sm);
       if(now-t0>seconds*1000){ stop=true; clearInterval(iv); const tb=total(); xhrs.forEach(x=>x&&x.abort()); if(!samples.length&&tb>0) samples.push(tb*8/((now-t0)/1000)/1e6); resolve(samples);} },100);
   });
 }
