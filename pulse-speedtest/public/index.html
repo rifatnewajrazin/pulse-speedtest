@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pulse — Internet Speed Test</title>
+<meta name="description" content="Fast, honest internet speed test: download, upload, latency, jitter, packet loss, streaming, disk speed and IP check.">
+<style>
+:root{
+  --bg:#020204;--card:#0a0d1f;--card2:#111634;--line:#203096;--txt:#eef1ff;--mut:#a5adc3;
+  --a:#3942c3;--b:#38d5ff;--c:#a855f7;--ok:#34d399;--warn:#fbbf24;--bad:#fb7185;
+  --glow:0 0 40px #3942c355,0 0 90px #a855f722;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--txt);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(800px 500px at 50% -160px,#3942c377,transparent),radial-gradient(600px 400px at 100% 10%,#a855f733,transparent),radial-gradient(600px 400px at 0% 40%,#38d5ff1a,transparent);background-attachment:fixed}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;justify-content:space-between;align-items:center;padding:6px 0 22px}
+.logo{font-weight:800;font-size:20px;letter-spacing:-.02em;display:flex;gap:10px;align-items:center}
+.logo i{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 50% 60%,#02020a 30%,transparent 32%),conic-gradient(from 200deg,var(--b),var(--a),var(--c),var(--b));display:block;box-shadow:0 0 18px #7191d799,0 0 40px #a855f755}
+.seg{display:inline-flex;background:#0a0d1f;border:1px solid #2a3aa9;border-radius:10px;padding:3px}
+.seg button{background:none;border:0;color:var(--mut);padding:5px 12px;border-radius:7px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.seg button.on{background:linear-gradient(135deg,#3942c3,#a855f7);color:#fff;box-shadow:0 0 16px #a855f788}
+.card{background:linear-gradient(180deg,#0e1330cc,#070a1acc);border:1px solid #2a3aa966;border-radius:20px;padding:20px;backdrop-filter:blur(10px);box-shadow:0 0 0 1px #ffffff08 inset,0 10px 40px #0008,0 0 60px #3942c318}
+.hero{box-shadow:var(--glow),0 0 0 1px #ffffff08 inset}
+.hero{display:grid;grid-template-columns:minmax(280px,380px) 1fr;gap:20px;align-items:center}
+@media(max-width:780px){.hero{grid-template-columns:1fr}}
+.gauge{position:relative;width:100%;max-width:340px;margin:0 auto}
+.gauge svg{width:100%;display:block;overflow:visible}
+#arc{filter:drop-shadow(0 0 6px #38d5ff)drop-shadow(0 0 16px #a855f7aa)}
+.gauge:before{content:'';position:absolute;left:50%;top:50%;width:70%;aspect-ratio:1;transform:translate(-50%,-45%);background:radial-gradient(circle,#3942c366,transparent 65%);filter:blur(24px);pointer-events:none}
+.gval{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:20px}
+.gval b{background:linear-gradient(180deg,#fff,#a5c4ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 0 18px #7191d788);font-size:58px;letter-spacing:-.04em;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.gval span{color:var(--mut);font-size:14px;margin-top:4px}
+.gval em{font-style:normal;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--b);font-weight:700;margin-bottom:6px}
+.go{display:block;margin:6px auto 0;border:0;border-radius:999px;padding:13px 40px;font:inherit;font-weight:700;font-size:16px;color:#fff;cursor:pointer;background:linear-gradient(135deg,#3942c3,#a855f7);box-shadow:0 0 0 1px #ffffff22 inset,0 8px 34px #a855f788,0 0 60px #3942c366;transition:transform .15s,box-shadow .15s}
+.go:hover{transform:translateY(-2px);box-shadow:0 0 0 1px #ffffff33 inset,0 10px 44px #a855f7cc,0 0 80px #38d5ff55}.go:disabled{opacity:.6;cursor:wait;transform:none}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{background:linear-gradient(160deg,#141a4499,#0a0e2599);border:1px solid #3942c344;border-radius:16px;padding:14px;transition:box-shadow .3s}
+.stat:hover{box-shadow:0 0 30px #3942c355}
+.stat small{color:var(--mut);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:flex;gap:6px;align-items:center}
+.stat b{background:linear-gradient(90deg,#fff,#9fc0ff);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:26px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat b u{-webkit-text-fill-color:var(--mut);text-decoration:none;font-size:13px;color:var(--mut);font-weight:600;margin-left:3px}
+.stat p{font-size:12px;color:var(--mut);margin-top:2px}
+canvas{width:100%;height:110px;display:block;margin-top:14px}
+h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--b);text-shadow:0 0 14px #38d5ff88;font-weight:700;margin:32px 0 12px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
+.ok{box-shadow:0 0 14px #34d39933;background:#34d39922;color:var(--ok)}.warn{background:#fbbf2422;color:var(--warn)}.bad{background:#f8717122;color:var(--bad)}.na{background:var(--card2);color:var(--mut)}
+.row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.row:last-child{border:0}.row span:first-child{color:var(--mut)}.row span:last-child{text-align:right;font-weight:600}
+.big{font-size:17px;font-weight:700;margin-bottom:4px}
+.note{color:var(--mut);font-size:13px}
+.bar{height:6px;background:var(--card2);border-radius:9px;overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--a),var(--b));box-shadow:0 0 12px var(--b);width:0;transition:width .6s}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+details{background:#0a0d1fcc;border:1px solid #2a3aa966;border-radius:14px;padding:14px 18px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:700}details p{color:var(--mut);margin-top:8px;font-size:14px}
+details p b{color:var(--txt)}
+.hint{cursor:help;border-bottom:1px dotted var(--mut)}
+footer{margin-top:40px;color:var(--mut);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo"><i></i>Pulse</div>
+  <div class="seg" id="unitSeg" title="Display units"><button data-u="mbps" class="on">Mbps</button><button data-u="MBps">MB/s</button><button data-u="gbps">Gbps</button></div>
+</header>
+
+<div id="localWarn" class="card" hidden style="margin-bottom:14px;border-color:var(--warn);background:#fbbf2410"><b style="color:var(--warn)">⚠ You are testing your own computer, not the internet.</b><p class="note" style="margin-top:4px">This page is served from <span id="lwHost"></span>, so download/upload only measure your machine (or local network) talking to itself and will look impossibly fast. Ping, jitter and loss are also not real internet numbers. Put this site on a remote server and open it from your phone or another network for true results.</p></div>
+
+<section class="card hero">
+  <div>
+    <div class="gauge">
+      <svg viewBox="0 0 200 140"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#a855f7"/><stop offset=".5" stop-color="#3942c3"/><stop offset="1" stop-color="#38d5ff"/></linearGradient></defs>
+        <path d="M30 120 A80 80 0 1 1 170 120" fill="none" stroke="var(--card2)" stroke-width="12" stroke-linecap="round"/>
+        <path id="arc" d="M30 120 A80 80 0 1 1 170 120" fill="none" stroke="url(#g)" stroke-width="12" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100"/>
+      </svg>
+      <div class="gval"><em id="phase">Ready</em><b id="big">0</b><span id="bigUnit">Mbps</span></div>
+    </div>
+    <button class="go" id="go">Start test</button>
+    <p class="note" id="status" style="text-align:center;margin-top:10px">Tests latency, download, upload, disk and your IP.</p>
+  </div>
+  <div>
+    <div class="stats">
+      <div class="stat"><small>Download</small><b id="dl">–<u></u></b><p id="dlSub">Getting data from the internet</p></div>
+      <div class="stat"><small>Upload</small><b id="ul">–<u></u></b><p id="ulSub">Sending data to the internet</p></div>
+      <div class="stat"><small><span class="hint" title="Time for a tiny message to go there and back">Ping</span></small><b id="ping">–<u>ms</u></b><p id="jit">Jitter –</p></div>
+      <div class="stat"><small><span class="hint" title="Percent of tiny messages that never came back">Packet loss</span></small><b id="loss">–<u>%</u></b><p id="lossSub">Lost messages</p></div>
+    </div>
+    <canvas id="chart" width="700" height="220"></canvas>
+  </div>
+</section>
+
+<section class="card" id="isp" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:22px;align-items:center">
+  <div style="flex:1;min-width:200px"><small class="note">YOUR INTERNET PROVIDER</small><div class="big" id="ispName" style="font-size:22px">Detecting…</div><p class="note" id="ispSub"></p></div>
+  <div><small class="note">IP ADDRESS</small><div class="big" id="ispIp">–</div></div>
+  <div><small class="note">LOCATION</small><div class="big" id="ispLoc">–</div></div>
+  <div><small class="note">NETWORK (ASN)</small><div class="big" id="ispAsn">–</div></div>
+</section>
+
+<h2>What you can actually do</h2>
+<div class="grid" id="uses"><div class="card note">Run the test to see this.</div></div>
+
+<h2>Real vs shared speed</h2>
+<div class="grid">
+  <div class="card"><div class="big" id="realTitle">–</div><p class="note" id="realTxt">We compare your peak speed with what you can sustain, and check whether things slow down when the line is busy.</p>
+    <div style="margin-top:12px">
+      <div class="row"><span><span class="hint" title="Best speed reached in the test — closest to what your plan advertises">Peak speed</span></span><span id="peak">–</span></div>
+      <div class="row"><span><span class="hint" title="Median speed over the test — what you get day to day">Sustained speed</span></span><span id="sust">–</span></div>
+      <div class="row"><span><span class="hint" title="How steady the speed was. 100% = perfectly flat">Stability</span></span><span id="stab">–</span></div>
+      <div class="row"><span><span class="hint" title="One connection vs many together. Big gap = long distance or a slow path">1 stream vs 4 streams</span></span><span id="multi">–</span></div>
+    </div></div>
+  <div class="card"><div class="big" id="bbTitle">–</div><p class="note">Bufferbloat: does your connection lag when someone is downloading? Ping is measured while the line is idle, then while it's full.</p>
+    <div style="margin-top:12px">
+      <div class="row"><span>Idle ping</span><span id="pIdle">–</span></div>
+      <div class="row"><span>Ping during download</span><span id="pDl">–</span></div>
+      <div class="row"><span>Ping during upload</span><span id="pUl">–</span></div>
+    </div></div>
+</div>
+
+<h2>Your IP — real, shared or hidden?</h2>
+<div class="grid">
+  <div class="card"><div class="big" id="ipTitle">–</div><p class="note" id="ipTxt">Checking…</p>
+    <div style="margin-top:12px" id="ipRows"></div></div>
+  <div class="card"><div class="big">Checks</div><div style="margin-top:8px" id="ipChecks"><p class="note">Runs with the test.</p></div></div>
+</div>
+
+<h2>Disk speed (this device)</h2>
+<div class="grid">
+  <div class="card"><small class="note">READ</small><div class="big" id="rd" style="font-size:28px">–</div><p class="note">Loading data from your storage</p></div>
+  <div class="card"><small class="note">WRITE</small><div class="big" id="wr" style="font-size:28px">–</div><p class="note" id="diskNote">Saving data to your storage. Measured through the browser, so real-world results can be higher.</p></div>
+</div>
+
+<h2>Speed in plain English</h2>
+<div class="card"><table>
+  <thead><tr><th>Your speed</th><th>Value</th><th>Meaning</th></tr></thead>
+  <tbody id="conv"><tr><td colspan="3" class="note">Run the test to see conversions.</td></tr></tbody></table>
+  <p class="note" style="margin-top:12px">Internet plans use <b>bits</b>; files and downloads use <b>bytes</b>. 1 byte = 8 bits, so <b>100 Mbps ≈ 12.5 MB/s</b>.</p>
+</div>
+
+<h2>Why Fast.com and Speedtest (Ookla) show different speeds</h2>
+<div class="card">
+  <p class="note" style="margin-bottom:12px">Neither is wrong. They measure <b>different paths</b> with <b>different methods</b>, so the numbers differ. Pulse is shown in the last column so you can see where it fits.</p>
+  <div style="overflow-x:auto"><table>
+    <thead><tr><th></th><th>Fast.com (Netflix)</th><th>Speedtest (Ookla)</th><th>Pulse (this site)</th></tr></thead>
+    <tbody>
+    <tr><td><b>What it answers</b></td><td>“How fast is Netflix-style streaming for me?”</td><td>“What is the max my line can do?”</td><td>Speed to <i>this</i> server + full health check</td></tr>
+    <tr><td><b>Test server</b></td><td>Netflix Open Connect boxes, often inside your ISP’s network</td><td>Nearby server you (or it) pick — often run by an ISP</td><td>The server hosting this page</td></tr>
+    <tr><td><b>Connections</b></td><td>Fewer parallel connections, plain HTTPS downloads</td><td>Many parallel connections, tuned to fill your line</td><td>4 parallel down, 3 up</td></tr>
+    <tr><td><b>Averaging</b></td><td>Averages the whole test, stricter</td><td>Drops the slowest &amp; fastest slices, favours peak</td><td>Median of steady samples + peak shown</td></tr>
+    <tr><td><b>Typical result</b></td><td>Lower, closer to real streaming</td><td>Higher, closer to advertised “up to” speed</td><td>Depends on server distance</td></tr>
+    </tbody></table></div>
+  <div class="grid" style="margin-top:14px">
+    <div class="card2" style="background:var(--card2);border-radius:14px;padding:14px"><b>Fast.com is lower when…</b><p class="note">Your ISP is congested toward Netflix, the Netflix box near you is busy, or Wi-Fi is weak. It reflects what streaming really gets.</p></div>
+    <div class="card2" style="background:var(--card2);border-radius:14px;padding:14px"><b>Ookla is higher when…</b><p class="note">A big local server exists (ISPs often host them, so traffic stays on their fast network). It shows line capacity, not everyday experience.</p></div>
+    <div class="card2" style="background:var(--card2);border-radius:14px;padding:14px"><b>Which should you trust?</b><p class="note">Use <b>Ookla</b> to check you get the plan you pay for. Use <b>Fast.com</b> to know how streaming will feel. A big gap between them can hint at ISP throttling of video.</p></div>
+  </div>
+  <p class="note" id="compareMine" style="margin-top:12px"></p>
+</div>
+
+<h2>Glossary — the confusing bits</h2>
+<details><summary>Megabit (Mb) vs Megabyte (MB)</summary><p>A <b>bit</b> is the smallest unit of data. A <b>byte</b> is 8 bits. Internet providers advertise speed in <b>megabits per second (Mbps)</b> because the number looks bigger. Your browser and download managers show <b>megabytes per second (MB/s)</b>. Small b = bit, capital B = byte.</p></details>
+<details><summary>Mega, Giga — how big?</summary><p>1 Gigabit = 1,000 Megabits. 1 Gigabyte = 1,000 Megabytes = 8,000 Megabits. So a <b>1 Gbps</b> line downloads at most <b>125 MB/s</b>.</p></details>
+<details><summary>Download vs upload</summary><p><b>Download</b> = getting data to you (streaming, browsing, game updates). <b>Upload</b> = sending data out (video calls, cloud backups, posting videos). Most home plans have much slower upload.</p></details>
+<details><summary>Ping / latency</summary><p>How long a tiny message takes to reach a server and come back, in milliseconds (ms). Lower is better. Under 30 ms is excellent, under 60 ms is fine for gaming, over 150 ms feels laggy.</p></details>
+<details><summary>Jitter</summary><p>How much your ping bounces around. Low jitter = smooth calls and games. High jitter = choppy voice, rubber-banding in games.</p></details>
+<details><summary>Packet loss</summary><p>Data travels in small packets. If some never arrive they must be re-sent, causing stutter. Anything above 1% is worth fixing; above 2.5% hurts calls and games a lot. Weak Wi-Fi is the usual cause.</p></details>
+<details><summary>Bufferbloat</summary><p>When your connection is busy, ping can shoot up because packets queue behind each other. Ping during download much higher than idle ping means one person's download makes everyone else lag.</p></details>
+<details><summary>Real, shared and CGNAT IPs</summary><p>Your <b>public IP</b> is your address on the internet. Some providers put many customers behind one address (<b>CGNAT</b>, range 100.64.x.x) — that's a <b>shared IP</b>: fine for browsing, but a problem for hosting servers, port forwarding and some games. A <b>VPN or proxy</b> replaces your real IP with the VPN server's one.</p></details>
+<details><summary>Why is my speed lower than my plan?</summary><p>Wi-Fi (walls, distance, 2.4 GHz), many devices at once, an old router, or ISP congestion at busy hours. Try again over an Ethernet cable and compare — that shows your <b>real line speed</b> without Wi-Fi in the way.</p></details>
+
+<footer>Runs on your own server. Speeds are measured between this browser and this server — deploy it near you (or on a fast host) for internet-wide accuracy.</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let unit = 'mbps', results = null;
+const fmtSpeed = mbps => {
+  if (mbps == null) return ['–',''];
+  if (unit === 'MBps') { const v = mbps/8; return [v>=100?v.toFixed(0):v.toFixed(1),'MB/s']; }
+  if (unit === 'gbps') return [(mbps/1000).toFixed(mbps>=100?2:3),'Gbps'];
+  return [mbps>=100?mbps.toFixed(0):mbps.toFixed(1),'Mbps'];
+};
+const setSpeed = (id, mbps) => { const [v,u]=fmtSpeed(mbps); $(id).innerHTML = v+'<u>'+u+'</u>'; };
+const median = a => { const s=[...a].sort((x,y)=>x-y); return s.length? s[Math.floor(s.length/2)] : 0; };
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const tag = (t,c) => `<span class="tag ${c}">${t}</span>`;
+
+// ---------- gauge + chart ----------
+function gauge(mbps, label, phase){
+  const f = Math.min(1, Math.log10(1+mbps)/Math.log10(1+2000));
+  $('arc').setAttribute('stroke-dasharray', (f*100)+' 100');
+  const [v,u] = fmtSpeed(mbps); $('big').textContent = v; $('bigUnit').textContent = u;
+  if (phase) $('phase').textContent = phase;
+}
+const chartData = {dl:[],ul:[]};
+function drawChart(){
+  const c=$('chart'), x=c.getContext('2d'), W=c.width, H=c.height;
+  x.clearRect(0,0,W,H);
+  const all=[...chartData.dl,...chartData.ul]; const max=Math.max(10,...all)*1.1;
+  x.strokeStyle='#8b93a722'; x.lineWidth=1;
+  for(let i=1;i<4;i++){x.beginPath();x.moveTo(0,H*i/4);x.lineTo(W,H*i/4);x.stroke();}
+  const line=(d,color)=>{ if(d.length<2)return; const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,color+'55');g.addColorStop(1,color+'00');
+    x.beginPath(); d.forEach((v,i)=>{const px=i/Math.max(d.length-1,1)*W,py=H-(v/max)*(H-8)-4; i?x.lineTo(px,py):x.moveTo(px,py)});
+    x.strokeStyle=color;x.lineWidth=3;x.lineJoin='round';x.stroke(); x.lineTo(W,H);x.lineTo(0,H);x.fillStyle=g;x.fill(); };
+  line(chartData.dl,'#38d5ff'); line(chartData.ul,'#c084fc');
+}
+
+// ---------- latency ----------
+async function pingOnce(timeout=2000){
+  const t0=performance.now(), ac=new AbortController(), to=setTimeout(()=>ac.abort(),timeout);
+  try{ await fetch('/api/ping?'+Math.random(),{cache:'no-store',signal:ac.signal}); return performance.now()-t0; }
+  catch{ return null } finally{ clearTimeout(to) }
+}
+async function pingSeries(n, gap=60){
+  const arr=[]; let lost=0;
+  for(let i=0;i<n;i++){ const r=await pingOnce(); r==null?lost++:arr.push(r); await sleep(gap); }
+  return {arr,lost,total:n};
+}
+const jitterOf = a => a.length<2?0:a.slice(1).reduce((s,v,i)=>s+Math.abs(v-a[i]),0)/(a.length-1);
+function loadedPinger(){
+  const arr=[]; let lost=0, on=true;
+  (async()=>{ while(on){ const r=await pingOnce(3000); if(!on)break; r==null?lost++:arr.push(r); await sleep(250);} })();
+  return ()=>{on=false; return {arr,lost}};
+}
+
+// ---------- download ----------
+async function downloadTest(streams, seconds, warm, onTick){
+  const ac=new AbortController(); let bytes=0; const samples=[]; const t0=performance.now();
+  const work=async()=>{ while(!ac.signal.aborted){ try{
+      const r=await fetch(`/api/download?bytes=100000000&r=${Math.random()}`,{cache:'no-store',signal:ac.signal});
+      const rd=r.body.getReader(); for(;;){const {done,value}=await rd.read(); if(done)break; bytes+=value.length;}
+    }catch{ if(ac.signal.aborted)return; await sleep(100);} } };
+  const ws=Array.from({length:streams},work);
+  let last=t0,lastB=0,win=[];
+  while(performance.now()-t0<seconds*1000){
+    await sleep(100); const now=performance.now(); const inst=(bytes-lastB)*8/((now-last)/1000)/1e6; last=now; lastB=bytes;
+    win.push(inst); if(win.length>5)win.shift(); const smooth=win.reduce((a,b)=>a+b,0)/win.length;
+    if(now-t0>warm*1000) samples.push(smooth); onTick&&onTick(smooth);
+  }
+  ac.abort(); await Promise.allSettled(ws); return samples;
+}
+
+// ---------- upload ----------
+function uploadTest(streams, seconds, warm, onTick){
+  return new Promise(resolve=>{
+    const blob=new Blob([crypto.getRandomValues(new Uint8Array(65536)).buffer].concat(Array(31).fill(0).map(()=>crypto.getRandomValues(new Uint8Array(65536)))) ); // 2MB (Vercel body limit is 4.5MB)
+    const t0=performance.now(); const prog=new Array(streams).fill(0); let done=0, stop=false, base=new Array(streams).fill(0);
+    const samples=[]; let last=t0,lastB=0,win=[]; const xhrs=[];
+    const total=()=>prog.reduce((a,b)=>a+b,0)+base.reduce((a,b)=>a+b,0);
+    const launch=i=>{ if(stop)return; const x=new XMLHttpRequest(); xhrs[i]=x; x.open('POST','/api/upload?'+Math.random());
+      x.upload.onprogress=e=>{prog[i]=e.loaded}; x.onload=()=>{base[i]+=prog[i];prog[i]=0;launch(i)}; x.onerror=()=>{prog[i]=0; if(!stop) setTimeout(()=>launch(i),200)}; x.send(blob); };
+    for(let i=0;i<streams;i++) launch(i);
+    const iv=setInterval(()=>{ const now=performance.now(), b=total(); const inst=(b-lastB)*8/((now-last)/1000)/1e6; last=now;lastB=b;
+      win.push(inst); if(win.length>5)win.shift(); const sm=win.reduce((a,c)=>a+c,0)/win.length; if(now-t0>warm*1000)samples.push(sm); onTick&&onTick(sm);
+      if(now-t0>seconds*1000){ stop=true; clearInterval(iv); xhrs.forEach(x=>x&&x.abort()); resolve(samples);} },100);
+  });
+}
+
+// ---------- disk ----------
+async function diskTest(){
+  if(!(navigator.storage&&navigator.storage.getDirectory)) return null;
+  const MB=1024*1024, N=64; const chunk=new Uint8Array(MB);
+  for(let o=0;o<MB;o+=65536) crypto.getRandomValues(chunk.subarray(o,o+65536));
+  let dir; try{ dir=await navigator.storage.getDirectory(); const fh=await dir.getFileHandle('pulse-test.bin',{create:true});
+    let t=performance.now(); const w=await fh.createWritable(); for(let i=0;i<N;i++) await w.write(chunk); await w.close();
+    const write=N*8*1.048576/((performance.now()-t)/1000); // Mbps
+    t=performance.now(); const f=await fh.getFile(); const rd=f.stream().getReader(); let got=0; for(;;){const {done,value}=await rd.read(); if(done)break; got+=value.length}
+    const read=got*8/1e6/((performance.now()-t)/1000);
+    await dir.removeEntry('pulse-test.bin'); return {read,write};
+  }catch(e){ try{dir&&await dir.removeEntry('pulse-test.bin')}catch{} return null; }
+}
+
+// ---------- IP ----------
+const HOSTING=/vpn|hosting|cloud|datacenter|data center|server|amazon|aws|google|digitalocean|ovh|hetzner|linode|vultr|m247|mullvad|nord|proton|surfshark|express|choopa|leaseweb|colo|cloudflare|warp|tor exit|proxy/i;
+function ipKind(ip){
+  if(!ip) return 'unknown';
+  if(ip.includes(':')) return /^(::1|fe80|fc|fd)/i.test(ip)?'private':'public';
+  const [a,b]=ip.split('.').map(Number);
+  if(a===127) return 'loopback'; if(a===10||(a===172&&b>=16&&b<=31)||(a===192&&b===168)||(a===169&&b===254)) return 'private';
+  if(a===100&&b>=64&&b<=127) return 'cgnat'; return 'public';
+}
+let PUB=null;
+async function loadPub(){ if(PUB) return PUB; try{ const j=await (await fetch('https://ipwho.is/',{cache:'no-store'})).json(); if(j.success) PUB=j; }catch{} return PUB; }
+async function ipTest(){
+  const out={checks:[],rows:[],title:'Unknown',cls:'na',txt:''};
+  let srv={}, pub=null;
+  try{ srv=await (await fetch('/api/ip',{cache:'no-store'})).json(); }catch{}
+  pub=await loadPub();
+  const seen=pub?.ip||srv.ip, kind=ipKind(seen), srvKind=ipKind(srv.ip);
+  const add=(t,ok,cls)=>out.checks.push(`<div class="row"><span>${t}</span><span>${tag(ok,cls)}</span></div>`);
+  out.rows.push(['Your public IP',seen||'unknown']);
+  if(pub){ out.rows.push(['Type',pub.type||'–']); out.rows.push(['ISP',pub.connection?.isp||pub.connection?.org||'–']); out.rows.push(['Location',[pub.city,pub.country].filter(Boolean).join(', ')||'–']); out.rows.push(['Timezone',pub.timezone?.id||'–']); }
+  if(srv.ip && srv.ip!==seen) out.rows.push(['Server sees',srv.ip]);
+
+  const cg=kind==='cgnat'||srvKind==='cgnat';
+  add('Public address', kind==='public'?'Yes':kind==='unknown'?'Unknown':'No ('+kind+')', kind==='public'?'ok':'warn');
+  add('Shared IP (CGNAT)', cg?'Yes — shared':'No — dedicated', cg?'warn':'ok');
+  let vpn=false;
+  if(pub){ const s=(pub.connection?.isp||'')+' '+(pub.connection?.org||''); const host=HOSTING.test(s); const tzMis=pub.timezone?.id&&pub.timezone.id!==Intl.DateTimeFormat().resolvedOptions().timeZone;
+    add('Datacenter / VPN network', host?'Looks like it':'Residential', host?'bad':'ok');
+    add('Timezone matches browser', tzMis?'Mismatch':'Match', tzMis?'warn':'ok'); vpn=host||tzMis; }
+  else add('IP lookup', 'Unavailable (offline?)','na');
+  add('Proxy headers', srv.viaProxy?'Detected':'None', srv.viaProxy?'warn':'ok');
+  vpn = vpn||srv.viaProxy;
+  if(kind==='public'&&!cg&&!vpn){out.title='Real, dedicated IP';out.cls='ok';out.txt='Looks like your genuine home/office address — not shared, not hidden.';}
+  else if(cg){out.title='Shared IP (CGNAT)';out.cls='warn';out.txt='Your ISP shares this address between many customers. Hosting or port-forwarding will not work without asking them.';}
+  else if(vpn){out.title='Likely VPN / proxy';out.cls='warn';out.txt='This address looks like a VPN, proxy or datacenter, not your real home connection.';}
+  else {out.title='Local / private address';out.cls='na';out.txt='No public address could be confirmed. Running the test on localhost or offline hides the real one.';}
+  return out;
+}
+
+// ---------- verdicts ----------
+const SPEEDS=[['SD video (480p)',3],['HD video (1080p)',8],['4K Ultra HD',25],['8K video',80]];
+function grade(ok,mid){return ok?['Great','ok']:mid?['OK','warn']:['Struggles','bad']}
+function renderUses(r){
+  const dl=r.dl, ul=r.ul, p=r.ping, lo=r.loss, jt=r.jitter, bb=r.dlPing;
+  const cards=[];
+  SPEEDS.forEach(([n,need])=>{ const cnt=Math.floor(dl/need); const [t,c]=grade(cnt>=1,dl>need*.7);
+    cards.push(`<div class="card"><div style="display:flex;justify-content:space-between"><b>🎬 ${n}</b>${tag(t,c)}</div><p class="note" style="margin-top:6px">Needs ~${need} Mbps. ${cnt>=1?`You can stream about <b>${cnt}</b> at once.`:'Will buffer.'}</p></div>`); });
+  const gOk=p<50&&lo<1&&jt<15, gMid=p<100&&lo<2.5; const [gt,gc]=grade(gOk,gMid);
+  cards.push(`<div class="card"><div style="display:flex;justify-content:space-between"><b>🎮 Online gaming</b>${tag(gt,gc)}</div><p class="note" style="margin-top:6px">Cares about ping (${p.toFixed(0)} ms), jitter and loss more than raw speed.</p></div>`);
+  const cOk=ul>=3&&dl>=3&&lo<1&&jt<30; const [ct,cc]=grade(cOk,ul>=1.5&&lo<3);
+  cards.push(`<div class="card"><div style="display:flex;justify-content:space-between"><b>📹 Video calls</b>${tag(ct,cc)}</div><p class="note" style="margin-top:6px">HD calls need ~3 Mbps up and down. Your upload: ${ul.toFixed(1)} Mbps.</p></div>`);
+  const [bt,bc]=grade(bb-p<40,bb-p<100);
+  cards.push(`<div class="card"><div style="display:flex;justify-content:space-between"><b>🏠 Many devices</b>${tag(bt,bc)}</div><p class="note" style="margin-top:6px">${bb-p<40?'Stays responsive when the line is busy.':'Gets laggy when someone downloads.'}</p></div>`);
+  $('uses').innerHTML=cards.join('');
+}
+function renderConv(dl,ul){
+  const row=(n,m)=>`<tr><td>${n}</td><td><b>${m.toFixed(m>=100?0:1)} Mbps</b><br><span class="note">${(m/8).toFixed(1)} MB/s · ${(m/1000).toFixed(3)} Gbps · ${(m/8000).toFixed(4)} GB/s</span></td><td class="note">${n==='Download'?'':''}</td></tr>`;
+  const t=(mb)=>{const s=mb*8/dl; return s<60?s.toFixed(0)+' sec':s<3600?(s/60).toFixed(1)+' min':(s/3600).toFixed(1)+' hr'};
+  $('conv').innerHTML=row('Download',dl).replace('<td class="note"></td>',`<td class="note">100 MB song pack: ${t(100)}<br>5 GB game: ${t(5000)}<br>50 GB game: ${t(50000)}</td>`)
+    + row('Upload',ul).replace('<td class="note"></td>',`<td class="note">1 GB video upload: ${(8000/ul<60?(8000/ul).toFixed(0)+' sec':(8000/ul/60).toFixed(1)+' min')}</td>`);
+}
+
+// ---------- orchestration ----------
+async function run(){
+  const btn=$('go'); btn.disabled=true; btn.textContent='Testing…'; chartData.dl=[];chartData.ul=[]; drawChart();
+  ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='–'); results={};
+  try{
+    $('status').textContent='Measuring latency…'; gauge(0,'','Ping');
+    const idle=await pingSeries(20,40); const idleMed=median(idle.arr)||0; const jit=jitterOf(idle.arr); const loss=idle.lost/idle.total*100;
+    $('ping').innerHTML=idleMed.toFixed(0)+'<u>ms</u>'; $('jit').textContent='Jitter '+jit.toFixed(1)+' ms'; $('loss').innerHTML=loss.toFixed(1)+'<u>%</u>'; $('lossSub').textContent=idle.lost+' of '+idle.total+' lost';
+    $('pIdle').textContent=idleMed.toFixed(0)+' ms';
+
+    $('status').textContent='Testing one connection…';
+    const single=median(await downloadTest(1,3,1,m=>gauge(m,'','Download')))||1;
+    $('status').textContent='Testing download…';
+    const stopDl=loadedPinger();
+    const dls=await downloadTest(4,8,2,m=>{gauge(m,'','Download');chartData.dl.push(m);drawChart();});
+    const lp=stopDl(); const dlPing=median(lp.arr)||idleMed;
+    const dl=median(dls)||0, peak=[...dls].sort((a,b)=>b-a)[Math.floor(dls.length*0.05)]||dl;
+    setSpeed('dl',dl); $('pDl').textContent=dlPing.toFixed(0)+' ms';
+
+    $('status').textContent='Testing upload…'; const stopUl=loadedPinger();
+    const uls=await uploadTest(3,7,1.5,m=>{gauge(m,'','Upload');chartData.ul.push(m);drawChart();});
+    const up=stopUl(); const ulPing=median(up.arr)||idleMed; const ul=median(uls)||0;
+    setSpeed('ul',ul); $('pUl').textContent=ulPing.toFixed(0)+' ms';
+    const totalLost=idle.lost+lp.lost+up.lost, totalSent=idle.total+lp.arr.length+lp.lost+up.arr.length+up.lost;
+    const lossAll=totalLost/totalSent*100; $('loss').innerHTML=lossAll.toFixed(1)+'<u>%</u>'; $('lossSub').textContent=totalLost+' of '+totalSent+' lost (incl. under load)';
+
+    results={dl,ul,ping:idleMed,jitter:jit,loss:lossAll,dlPing,ulPing,peak};
+    $('compareMine').innerHTML='<b>Your result:</b> Pulse measured <b>'+dl.toFixed(0)+' Mbps</b> sustained (peak '+peak.toFixed(0)+'). Expect <b>Ookla</b> to land near the peak or higher, and <b>Fast.com</b> at or a bit below the sustained number. If Fast.com is far below both, your ISP may be slow toward video servers.';
+    gauge(dl,'','Done'); renderUses(results); renderConv(dl,ul);
+
+    // real vs shared
+    const cv=(()=>{const m=dls.reduce((a,b)=>a+b,0)/(dls.length||1); const sd=Math.sqrt(dls.reduce((s,v)=>s+(v-m)**2,0)/(dls.length||1)); return m?sd/m:1})();
+    const stab=Math.max(0,100-cv*100); const ratio=dl/single;
+    $('peak').textContent=fmtSpeed(peak).join(' '); $('sust').textContent=fmtSpeed(dl).join(' '); $('stab').textContent=stab.toFixed(0)+'%';
+    $('multi').textContent=fmtSpeed(single).join(' ')+' → '+fmtSpeed(dl).join(' ')+' ('+ratio.toFixed(1)+'×)';
+    const shared=stab<70||dl<peak*0.7||lossAll>2;
+    $('realTitle').innerHTML=shared?tag('Likely shared / congested','warn'):tag('Looks like a solid, dedicated line','ok');
+    $('realTxt').textContent=shared?'Your speed swings or drops well below its peak — typical of Wi-Fi interference, a busy network or an oversubscribed shared line. Retest on Ethernet at a quiet hour.':'Speed stayed close to its peak with little variation. That is what a healthy, uncongested connection looks like. (This is an estimate from one test.)';
+    const inc=dlPing-idleMed; const [bl,bcx]=inc<30?['A (no bufferbloat)','ok']:inc<100?['B (some lag under load)','warn']:['C (lag spikes under load)','bad'];
+    $('bbTitle').innerHTML=tag('Bufferbloat: '+bl,bcx);
+
+    $('status').textContent='Checking disk speed…'; const d=await diskTest();
+    if(d){ $('rd').textContent=(d.read/8).toFixed(0)+' MB/s'; $('wr').textContent=(d.write/8).toFixed(0)+' MB/s'; }
+    else { $('rd').textContent='n/a'; $('wr').textContent='n/a'; $('diskNote').textContent='Your browser does not allow the disk test (needs Origin Private File System).'; }
+    results.disk=d;
+
+    $('status').textContent='Checking your IP…'; const ip=await ipTest();
+    $('ipTitle').innerHTML=tag(ip.title,ip.cls); $('ipTxt').textContent=ip.txt;
+    $('ipRows').innerHTML=ip.rows.map(([a,b])=>`<div class="row"><span>${a}</span><span>${b}</span></div>`).join(''); $('ipChecks').innerHTML=ip.checks.join('');
+    $('status').textContent='Done ✓ '+new Date().toLocaleTimeString()+($('localWarn').hidden?'':' (local test — not internet speed)'); $('phase').textContent='Complete';
+    try{const h=JSON.parse(localStorage.pulse||'[]'); h.unshift({t:Date.now(),dl,ul,p:idleMed}); localStorage.pulse=JSON.stringify(h.slice(0,10));}catch{}
+  }catch(e){ $('status').textContent='Test failed: '+e.message; }
+  btn.disabled=false; btn.textContent='Test again';
+}
+$('go').onclick=run;
+$('unitSeg').onclick=e=>{ const u=e.target.dataset.u; if(!u)return; unit=u; [...$('unitSeg').children].forEach(b=>b.classList.toggle('on',b.dataset.u===u));
+  if(results&&results.dl!=null){ setSpeed('dl',results.dl); setSpeed('ul',results.ul); gauge(results.dl); } else gauge(0); };
+const h=location.hostname; if(/^(localhost|127\.|\[?::1|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h)){ $('localWarn').hidden=false; $('lwHost').textContent=h; }
+gauge(0);
+(async()=>{ const p=await loadPub(); let srv={}; try{srv=await (await fetch('/api/ip',{cache:'no-store'})).json()}catch{}
+  if(!p){ $('ispName').textContent='Could not detect'; $('ispSub').textContent='IP lookup needs internet access.'; $('ispIp').textContent=srv.ip||'–'; return; }
+  const c=p.connection||{}; $('ispName').textContent=c.isp||c.org||'Unknown'; $('ispSub').textContent=(c.org&&c.org!==c.isp?c.org+' · ':'')+(p.type||'');
+  $('ispIp').textContent=p.ip; $('ispLoc').textContent=[p.city,p.region,p.country].filter(Boolean).join(', ')||'–'; $('ispAsn').textContent=c.asn?('AS'+c.asn):'–'; })();
+</script>
+</body>
+</html>
