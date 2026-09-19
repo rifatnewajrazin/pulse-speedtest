@@ -322,7 +322,7 @@ async function pingSeries(n, gap=60){
 const jitterOf = a => a.length<2?0:a.slice(1).reduce((s,v,i)=>s+Math.abs(v-a[i]),0)/(a.length-1);
 function loadedPinger(){
   const arr=[]; let lost=0, on=true;
-  (async()=>{ while(on){ const r=await pingOnce(3000); if(!on)break; r==null?lost++:arr.push(r); await sleep(250);} })();
+  (async()=>{ while(on){ const r=await pingOnce(3000); if(!on)break; r==null?(lost++,arr.push(3000)):arr.push(r); await sleep(250);} })();
   return ()=>{on=false; return {arr,lost}};
 }
 
@@ -461,8 +461,8 @@ async function run(){
     const up=stopUl(); const ulPing=median(up.arr)||idleMed; const ul=median(uls)||0;
     if(!(ul>0)) $('ulSub').textContent=UPERR?'Upload blocked by server (HTTP '+UPERR+')':UPFAIL?'Upload connection failed — retry':'No upload data measured';
     setSpeed('ul',ul); $('pUl').textContent=ulPing.toFixed(0)+' ms';
-    const totalLost=idle.lost+lp.lost+up.lost, totalSent=idle.total+lp.arr.length+lp.lost+up.arr.length+up.lost;
-    const lossAll=totalLost/totalSent*100; $('loss').innerHTML=lossAll.toFixed(1)+'<u>%</u>'; $('lossSub').textContent=totalLost+' of '+totalSent+' lost (incl. under load)';
+    const totalLost=idle.lost, totalSent=idle.total;
+    const lossAll=totalLost/totalSent*100; $('loss').innerHTML=lossAll.toFixed(1)+'<u>%</u>'; $('lossSub').textContent=totalLost+' of '+totalSent+' lost while idle';
 
     results={dl,ul,ping:idleMed,jitter:jit,loss:lossAll,dlPing,ulPing,peak};
     $('compareMine').innerHTML='<b>Your result:</b> Pulse measured <b>'+dl.toFixed(0)+' Mbps</b> sustained (peak '+peak.toFixed(0)+'). Expect <b>Ookla</b> to land near the peak or higher, and <b>Fast.com</b> at or a bit below the sustained number. If Fast.com is far below both, your ISP may be slow toward video servers.';
