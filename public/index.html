@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14100c">
 <title>Pulse — Internet Speed Test</title>
 <meta name="description" content="Fast, honest internet speed test: download, upload, latency, jitter, packet loss, streaming, disk speed and IP check.">
 <style>
@@ -77,6 +78,22 @@ summary{cursor:pointer;font-weight:700}details p{color:var(--mut);margin-top:8px
 details p b{color:var(--txt)}
 .hint{cursor:help;border-bottom:1px dotted var(--mut)}
 footer{margin-top:40px;color:var(--mut);font-size:12px;text-align:center}
+@media(max-width:600px){
+.wrap{padding:14px max(12px,env(safe-area-inset-right)) 48px max(12px,env(safe-area-inset-left))}
+.card{padding:16px;border-radius:20px}
+.stats{gap:10px}.stat b{font-size:24px}
+.gval b{font-size:42px}
+.go{width:100%;padding:16px}
+.seg button{padding:9px 12px}
+.intro{font-size:15px}.pix{width:24px;height:48px}
+.grid{grid-template-columns:1fr}
+.row{font-size:13px}
+table{font-size:13px}
+body:after{opacity:.2}
+}
+@media(max-width:360px){.stats{grid-template-columns:1fr}}
+@media(hover:none){.card,.stat{backdrop-filter:none;-webkit-backdrop-filter:none;background:#ffffff14}}
+html{-webkit-text-size-adjust:100%}button{touch-action:manipulation}
 </style>
 </head>
 <body>
@@ -366,6 +383,7 @@ function renderConv(dl,ul){
 
 // ---------- orchestration ----------
 async function run(){
+  let wl=null; try{ wl=await navigator.wakeLock?.request('screen'); }catch{}
   const btn=$('go'); btn.disabled=true; btn.textContent='Testing…'; chartData.dl=[];chartData.ul=[]; drawChart();
   ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='–'); results={};
   try{
@@ -416,6 +434,7 @@ async function run(){
     $('status').textContent='Done ✓ '+new Date().toLocaleTimeString()+($('localWarn').hidden?'':' (local test — not internet speed)'); $('phase').textContent='Complete';
     try{const h=JSON.parse(localStorage.pulse||'[]'); h.unshift({t:Date.now(),dl,ul,p:idleMed}); localStorage.pulse=JSON.stringify(h.slice(0,10));}catch{}
   }catch(e){ $('status').textContent='Test failed: '+e.message; }
+  try{ wl&&wl.release(); }catch{}
   btn.disabled=false; btn.textContent='Test again';
 }
 $('go').onclick=run;
