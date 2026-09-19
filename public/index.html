@@ -94,6 +94,27 @@ body:after{opacity:.2}
 @media(max-width:360px){.stats{grid-template-columns:1fr}}
 @media(hover:none){.card,.stat{backdrop-filter:none;-webkit-backdrop-filter:none;background:#ffffff14}}
 html{-webkit-text-size-adjust:100%}button{touch-action:manipulation}
+/* centered layout + smoothness */
+body{background-attachment:scroll!important}
+.wrap{text-align:center}
+header{flex-direction:column;gap:12px;justify-content:center}
+.pill{margin:0 auto}
+.headline{margin-left:auto;margin-right:auto}
+.intro{margin-left:auto;margin-right:auto;text-align:left;justify-content:center;align-items:center}
+h2{justify-content:center}
+.hero{justify-items:center;text-align:center}.hero>div{width:100%}
+.stat,.card{text-align:center}.stat small{justify-content:center}
+.row{text-align:left}details,table,.grid .card .row{text-align:left}
+#isp{justify-content:center;text-align:center}
+.card,.stat,details{contain:layout paint}
+.tk{filter:none!important;transition:none}
+.tk.on{filter:none}
+.go,.seg button,.bar i{will-change:transform}
+.go:active{transform:scale(.97)}
+html{scroll-behavior:smooth}
+body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
+.gauge svg,canvas{transform:translateZ(0)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -234,9 +255,12 @@ const NT=72; let tickEls=[];
 function buildTicks(){ const g=$('ticks'); const ns='http://www.w3.org/2000/svg';
   for(let i=0;i<NT;i++){ const ang=(135+270*i/(NT-1))*Math.PI/180, big=i%6===0, r1=big?84:88, r2=98; const l=document.createElementNS(ns,'line');
     l.setAttribute('x1',110+r1*Math.cos(ang));l.setAttribute('y1',110+r1*Math.sin(ang));l.setAttribute('x2',110+r2*Math.cos(ang));l.setAttribute('y2',110+r2*Math.sin(ang));l.setAttribute('class','tk');g.appendChild(l);tickEls.push(l);} }
-function gauge(mbps, label, phase){
+let _g=null,_raf=0;
+function gauge(mbps, label, phase){ _g=[mbps,label,phase]; if(!_raf) _raf=requestAnimationFrame(()=>{_raf=0; const a=_g; _gauge(a[0],a[1],a[2]);}); }
+let _on=-1;
+function _gauge(mbps, label, phase){
   const f = Math.min(1, Math.log10(1+mbps)/Math.log10(1+2000)), on=Math.round(f*NT);
-  tickEls.forEach((t,i)=>t.classList.toggle('on',i<on));
+  if(on!==_on){ const lo=Math.min(on,_on<0?0:_on), hi=Math.max(on,_on<0?NT:_on); for(let i=lo;i<hi&&i<NT;i++) tickEls[i].classList.toggle('on',i<on); _on=on; }
   const [v,u] = fmtSpeed(mbps); $('big').textContent = v; $('bigUnit').textContent = u;
   if (phase) $('phase').textContent = phase;
 }
