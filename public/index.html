@@ -179,6 +179,7 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
   <div><small class="note">IP ADDRESS</small><div class="big" id="ispIp">–</div></div>
   <div><small class="note">LOCATION</small><div class="big" id="ispLoc">–</div></div>
   <div><small class="note">NETWORK (ASN)</small><div class="big" id="ispAsn">–</div></div>
+  <div><small class="note">TEST SERVER</small><div class="big" id="ispSrv">–</div><p class="note" id="ispSrvSub"></p></div>
 </section>
 
 <h2>What you can actually do</h2>
@@ -304,9 +305,13 @@ function drawChart(){
 }
 
 // ---------- latency ----------
+const SERVER={edge:null,fn:null};
+const REGIONS={bom1:'Mumbai, India',sin1:'Singapore',hkg1:'Hong Kong',iad1:'Washington DC, USA',sfo1:'San Francisco, USA',cdg1:'Paris, France',fra1:'Frankfurt, Germany',lhr1:'London, UK',syd1:'Sydney, Australia',hnd1:'Tokyo, Japan',dxb1:'Dubai, UAE',cle1:'Cleveland, USA',pdx1:'Portland, USA',gru1:'São Paulo, Brazil',icn1:'Seoul, South Korea',kix1:'Osaka, Japan',arn1:'Stockholm, Sweden',dub1:'Dublin, Ireland',cpt1:'Cape Town, South Africa'};
+function noteServer(r){ const id=r.headers.get('x-vercel-id')||''; const p=id.split('::'); const fn=r.headers.get('x-pulse-region')||p[p.length-2]||null; SERVER.edge=p.length>2?p[0]:null; SERVER.fn=fn;
+  const el=$('ispSrv'); if(el&&fn){ el.textContent=REGIONS[fn]||fn; const sub=$('ispSrvSub'); if(sub) sub.textContent='Region '+fn+(SERVER.edge&&SERVER.edge!==fn?' · entry '+SERVER.edge:''); } }
 async function pingOnce(timeout=2000){
   const t0=performance.now(), ac=new AbortController(), to=setTimeout(()=>ac.abort(),timeout);
-  try{ await fetch('/api/ping?'+Math.random(),{cache:'no-store',signal:ac.signal}); return performance.now()-t0; }
+  try{ const r=await fetch('/api/ping?'+Math.random(),{cache:'no-store',signal:ac.signal}); const ms=performance.now()-t0; if(!SERVER.fn) noteServer(r); return ms; }
   catch{ return null } finally{ clearTimeout(to) }
 }
 async function pingSeries(n, gap=60){
@@ -339,18 +344,19 @@ async function downloadTest(streams, seconds, warm, onTick){
 }
 
 // ---------- upload ----------
+let UPFAIL=0,UPERR=0;
 function uploadTest(streams, seconds, warm, onTick){
   return new Promise(resolve=>{
-    const blob=new Blob([crypto.getRandomValues(new Uint8Array(65536)).buffer].concat(Array(31).fill(0).map(()=>crypto.getRandomValues(new Uint8Array(65536)))) ); // 2MB (Vercel body limit is 4.5MB)
+    const blob=new Blob(Array.from({length:16},()=>crypto.getRandomValues(new Uint8Array(65536))),{type:'application/octet-stream'}); // 2MB (Vercel body limit is 4.5MB)
     const t0=performance.now(); const prog=new Array(streams).fill(0); let done=0, stop=false, base=new Array(streams).fill(0);
     const samples=[]; let last=t0,lastB=0,win=[]; const xhrs=[];
     const total=()=>prog.reduce((a,b)=>a+b,0)+base.reduce((a,b)=>a+b,0);
     const launch=i=>{ if(stop)return; const x=new XMLHttpRequest(); xhrs[i]=x; x.open('POST','/api/upload?'+Math.random());
-      x.upload.onprogress=e=>{prog[i]=e.loaded}; x.onload=()=>{base[i]+=prog[i];prog[i]=0;launch(i)}; x.onerror=()=>{prog[i]=0; if(!stop) setTimeout(()=>launch(i),200)}; x.send(blob); };
+      x.upload.onprogress=e=>{prog[i]=e.loaded}; x.onload=()=>{base[i]+=prog[i];prog[i]=0;launch(i)}; x.onerror=()=>{prog[i]=0; UPFAIL++; if(!stop) setTimeout(()=>launch(i),Math.min(1500,200*UPFAIL))}; x.onreadystatechange=()=>{ if(x.readyState===4&&x.status>=400){UPFAIL++; UPERR=x.status} }; x.send(blob); };
     for(let i=0;i<streams;i++) launch(i);
     const iv=setInterval(()=>{ const now=performance.now(), b=total(); const inst=(b-lastB)*8/((now-last)/1000)/1e6; last=now;lastB=b;
       win.push(inst); if(win.length>5)win.shift(); const sm=win.reduce((a,c)=>a+c,0)/win.length; if(now-t0>warm*1000)samples.push(sm); onTick&&onTick(sm);
-      if(now-t0>seconds*1000){ stop=true; clearInterval(iv); xhrs.forEach(x=>x&&x.abort()); resolve(samples);} },100);
+      if(now-t0>seconds*1000){ stop=true; clearInterval(iv); const tb=total(); xhrs.forEach(x=>x&&x.abort()); if(!samples.length&&tb>0) samples.push(tb*8/((now-t0)/1000)/1e6); resolve(samples);} },100);
   });
 }
 
@@ -396,7 +402,7 @@ async function ipTest(){
   let vpn=false;
   if(pub){ const s=(pub.connection?.isp||'')+' '+(pub.connection?.org||''); const host=HOSTING.test(s); const tzMis=pub.timezone?.id&&pub.timezone.id!==Intl.DateTimeFormat().resolvedOptions().timeZone;
     add('Datacenter / VPN network', host?'Looks like it':'Residential', host?'bad':'ok');
-    add('Timezone matches browser', tzMis?'Mismatch':'Match', tzMis?'warn':'ok'); vpn=host||tzMis; }
+    add('Timezone matches browser', tzMis?'Mismatch':'Match', tzMis?'warn':'ok'); vpn=host; }
   else add('IP lookup', 'Unavailable (offline?)','na');
   add('Proxy headers', srv.viaProxy?'Detected':'None', srv.viaProxy?'warn':'ok');
   vpn = vpn||srv.viaProxy;
@@ -427,7 +433,7 @@ function renderConv(dl,ul){
   const row=(n,m)=>`<tr><td>${n}</td><td><b>${m.toFixed(m>=100?0:1)} Mbps</b><br><span class="note">${(m/8).toFixed(1)} MB/s · ${(m/1000).toFixed(3)} Gbps · ${(m/8000).toFixed(4)} GB/s</span></td><td class="note">${n==='Download'?'':''}</td></tr>`;
   const t=(mb)=>{const s=mb*8/dl; return s<60?s.toFixed(0)+' sec':s<3600?(s/60).toFixed(1)+' min':(s/3600).toFixed(1)+' hr'};
   $('conv').innerHTML=row('Download',dl).replace('<td class="note"></td>',`<td class="note">100 MB song pack: ${t(100)}<br>5 GB game: ${t(5000)}<br>50 GB game: ${t(50000)}</td>`)
-    + row('Upload',ul).replace('<td class="note"></td>',`<td class="note">1 GB video upload: ${(8000/ul<60?(8000/ul).toFixed(0)+' sec':(8000/ul/60).toFixed(1)+' min')}</td>`);
+    + row('Upload',ul).replace('<td class="note"></td>',`<td class="note">1 GB video upload: ${!(ul>0)?'n/a':(8000/ul<60?(8000/ul).toFixed(0)+' sec':(8000/ul/60).toFixed(1)+' min')}</td>`);
 }
 
 // ---------- orchestration ----------
@@ -450,9 +456,10 @@ async function run(){
     const dl=median(dls)||0, peak=[...dls].sort((a,b)=>b-a)[Math.floor(dls.length*0.05)]||dl;
     setSpeed('dl',dl); $('pDl').textContent=dlPing.toFixed(0)+' ms';
 
-    $('status').textContent='Testing upload…'; const stopUl=loadedPinger();
+    UPFAIL=0;UPERR=0; $('status').textContent='Testing upload…'; const stopUl=loadedPinger();
     const uls=await uploadTest(3,7,1.5,m=>{gauge(m,'','Upload');chartData.ul.push(m);drawChart();});
     const up=stopUl(); const ulPing=median(up.arr)||idleMed; const ul=median(uls)||0;
+    if(!(ul>0)) $('ulSub').textContent=UPERR?'Upload blocked by server (HTTP '+UPERR+')':UPFAIL?'Upload connection failed — retry':'No upload data measured';
     setSpeed('ul',ul); $('pUl').textContent=ulPing.toFixed(0)+' ms';
     const totalLost=idle.lost+lp.lost+up.lost, totalSent=idle.total+lp.arr.length+lp.lost+up.arr.length+up.lost;
     const lossAll=totalLost/totalSent*100; $('loss').innerHTML=lossAll.toFixed(1)+'<u>%</u>'; $('lossSub').textContent=totalLost+' of '+totalSent+' lost (incl. under load)';
