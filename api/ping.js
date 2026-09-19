@@ -1,5 +1,7 @@
-module.exports = (req, res) => {
-  res.setHeader('Cache-Control', 'no-store, no-transform');
-  res.setHeader('X-Pulse-Region', process.env.VERCEL_REGION || 'local');
-  res.status(204).end();
-};
+export const config = { runtime: 'edge' };
+export default function handler() {
+  return new Response(null, { status: 204, headers: {
+    'Cache-Control': 'no-store, no-transform',
+    'X-Pulse-Region': process.env.VERCEL_REGION || '',
+  }});
+}
