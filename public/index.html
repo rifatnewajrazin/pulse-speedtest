@@ -350,18 +350,29 @@ async function downloadTest(streams, seconds, warm, onTick){
 
 // ---------- upload ----------
 let UPFAIL=0,UPERR=0;
+// Long-lived POSTs (1MB then 4MB, under Vercel's 4.5MB cap) measured via upload progress. Final figure = bytes moved between
+// warm-up end and test end, so the initial socket-buffer burst doesn't inflate it. Returns live samples; .final holds the result.
 function uploadTest(streams, seconds, warm, onTick){
   return new Promise(resolve=>{
-    const blob=new Blob([crypto.getRandomValues(new Uint8Array(65536))],{type:'text/plain'}); // 64KB chunks so slow uplinks still confirm bytes
-    const t0=performance.now(); const prog=new Array(streams).fill(0); let done=0, stop=false, base=new Array(streams).fill(0);
-    const samples=[]; let last=t0,lastB=0,win=[]; const xhrs=[]; const hist=[];
-    const total=()=>base.reduce((a,b)=>a+b,0)+prog.reduce((a,b)=>a+b,0); // confirmed bytes + in-flight progress (small chunks keep progress smooth)
-    const launch=i=>{ if(stop)return; const x=new XMLHttpRequest(); xhrs[i]=x; x.open('POST',EP('up')+'?'+Math.random()); prog[i]=0; x.upload.onprogress=e=>{prog[i]=Math.min(e.loaded,blob.size)};
-      x.onload=()=>{ prog[i]=0; if(x.status===200) base[i]+=blob.size; else {UPFAIL++;UPERR=x.status;} launch(i)}; x.onerror=()=>{prog[i]=0; UPFAIL++; if(!stop) setTimeout(()=>launch(i),Math.min(1500,200*UPFAIL))}; x.onreadystatechange=()=>{ if(x.readyState===4&&x.status>=400){UPFAIL++; UPERR=x.status} }; x.send(blob); };
+    const mk=n=>{const u=new Uint8Array(n); for(let o=0;o<n;o+=65536) crypto.getRandomValues(u.subarray(o,o+65536)); return new Blob([u],{type:'application/octet-stream'});};
+    const small=mk(1<<20), big=mk(4<<20);
+    const t0=performance.now(); const prog=new Array(streams).fill(0), base=new Array(streams).fill(0), sent=new Array(streams).fill(0), xhrs=[];
+    let stop=false, tw=null, bw=0; const samples=[]; const hist=[];
+    const total=()=>base.reduce((a,b)=>a+b,0)+prog.reduce((a,b)=>a+b,0);
+    const launch=i=>{ if(stop)return; const blob=sent[i]++?big:small; const x=new XMLHttpRequest(); xhrs[i]=x; prog[i]=0;
+      x.open('POST',EP('up')+'?'+Math.random());
+      x.upload.onprogress=e=>{prog[i]=Math.min(e.loaded,blob.size)};
+      x.onload=()=>{ if(x.status===200){ base[i]+=blob.size; prog[i]=0; } else {prog[i]=0; UPFAIL++; UPERR=x.status; if(!stop) return void setTimeout(()=>launch(i),500);} launch(i); };
+      x.onerror=()=>{ prog[i]=0; UPFAIL++; if(!stop) setTimeout(()=>launch(i),Math.min(1500,200*UPFAIL)); };
+      x.send(blob); };
     for(let i=0;i<streams;i++) launch(i);
-    const iv=setInterval(()=>{ const now=performance.now(), b=total(); const inst=(b-lastB)*8/((now-last)/1000)/1e6; last=now;lastB=b;
-      hist.push([now,b]); while(hist.length>2&&now-hist[0][0]>3000)hist.shift(); const sm=(b-hist[0][1])*8/Math.max(1,(now-hist[0][0])/1000)/1e6; if(now-t0>warm*1000)samples.push(sm); onTick&&onTick(sm);
-      if(now-t0>seconds*1000){ stop=true; clearInterval(iv); const tb=total(); xhrs.forEach(x=>x&&x.abort()); if(!samples.length&&tb>0) samples.push(tb*8/((now-t0)/1000)/1e6); resolve(samples);} },100);
+    const iv=setInterval(()=>{ const now=performance.now(), b=total();
+      hist.push([now,b]); while(hist.length>2&&now-hist[0][0]>2000)hist.shift();
+      const sm=(b-hist[0][1])*8/Math.max(0.1,(now-hist[0][0])/1000)/1e6;
+      if(tw===null&&now-t0>=warm*1000){tw=now;bw=b;}
+      if(tw!==null) samples.push(sm); onTick&&onTick(sm);
+      if(now-t0>seconds*1000){ stop=true; clearInterval(iv); const tb=total(); xhrs.forEach(x=>x&&x.abort());
+        const from=tw??t0, bf=tw!==null?bw:0; samples.final=(tb-bf)*8/Math.max(0.5,(now-from)/1000)/1e6; resolve(samples); } },100);
   });
 }
 
@@ -464,7 +475,7 @@ async function run(){
 
     UPFAIL=0;UPERR=0; $('status').textContent='Testing upload…'; const stopUl=loadedPinger();
     const uls=await uploadTest(4,8,2,m=>{gauge(m,'','Upload');chartData.ul.push(m);drawChart();});
-    const up=stopUl(); const ulPing=median(up.arr)||idleMed; const ul=uls.length?uls.reduce((a,b)=>a+b,0)/uls.length:0; // mean: completions arrive in steps, median can land on a gap
+    const up=stopUl(); const ulPing=median(up.arr)||idleMed; const ul=uls.final||0;
     if(!(ul>0)) $('ulSub').textContent=UPERR?'Upload blocked by server (HTTP '+UPERR+')':UPFAIL?'Upload connection failed — retry':'No upload data measured';
     setSpeed('ul',ul); $('pUl').textContent=ulPing.toFixed(0)+' ms';
     const totalLost=idle.lost, totalSent=idle.total;
