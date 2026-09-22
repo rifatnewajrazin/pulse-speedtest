@@ -1,13 +1,17 @@
 // Pulse speed-test endpoints on Cloudflare's edge (nearest PoP, e.g. Dhaka).
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
+// Only Pulse's own pages may use these endpoints from a browser (stops other sites hot-linking the bandwidth).
+const ORIGINS = [/^https:\/\/speed\.rifatnewajrazin\.com$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
+const corsFor = origin => ({
+  'Access-Control-Allow-Origin': ORIGINS.some(r => r.test(origin || '')) ? origin : 'https://speed.rifatnewajrazin.com',
+  'Vary': 'Origin',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': '*',
+  'Access-Control-Max-Age': '86400', // cache the upload preflight instead of repeating it
   'Access-Control-Expose-Headers': 'X-Pulse-Region, X-Pulse-Country',
   'Timing-Allow-Origin': '*',
   'Cache-Control': 'no-store, no-transform',
-};
-const MAX = 100 * 1024 * 1024;
+});
+const MAX = 25 * 1000 * 1000; // larger responses ran out of Worker CPU time and were cut off mid-stream
 let BLOCK = null; // random data, created lazily (Workers disallow random values at global scope)
 function getBlock() {
   if (!BLOCK) { BLOCK = new Uint8Array(1 << 20); for (let o = 0; o < BLOCK.length; o += 65536) crypto.getRandomValues(BLOCK.subarray(o, o + 65536)); }
@@ -17,7 +21,7 @@ function getBlock() {
 export default {
   async fetch(req) {
     const url = new URL(req.url);
-    const h = { ...CORS, 'X-Pulse-Region': req.cf?.colo || '', 'X-Pulse-Country': req.cf?.country || '' };
+    const h = { ...corsFor(req.headers.get('Origin')),'X-Pulse-Region': req.cf?.colo || '', 'X-Pulse-Country': req.cf?.country || '' };
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: h });
 
     if (url.pathname === '/ping') return new Response(null, { status: 204, headers: h });
@@ -40,8 +44,9 @@ export default {
     }
 
     if (url.pathname === '/up') {
-      let n = 0;
-      if (req.body) { const r = req.body.getReader(); for (;;) { const { done, value } = await r.read(); if (done) break; n += value.length; } }
+      // arrayBuffer() collects the body natively; a JS read loop per chunk burned through the free plan's
+      // ~10 ms CPU limit on multi-MB uploads and failed with error 1102.
+      const n = req.body ? (await req.arrayBuffer()).byteLength : 0;
       return Response.json({ received: n }, { headers: h });
     }
 

@@ -53,15 +53,25 @@ header{display:flex;justify-content:space-between;align-items:center;padding:6px
 .go:hover{transform:translateY(-2px);box-shadow:0 0 0 1px #fff inset,0 14px 54px #f28a2ecc}.go:disabled{opacity:.6;cursor:wait;transform:none}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .stat{background:linear-gradient(160deg,#ffffff1a,#ffffff08);border:1px solid var(--line);border-radius:18px;padding:16px;position:relative;backdrop-filter:blur(20px)}
-.stat:after{content:"↗";position:absolute;right:12px;top:12px;width:24px;height:24px;border-radius:8px;background:#ffffff14;display:grid;place-items:center;font-size:12px;color:var(--mut)}
 .stat small{color:var(--mut);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;display:flex;gap:6px;align-items:center}
 .stat b{font-size:30px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .stat b u{text-decoration:none;font-size:13px;color:var(--mut);font-weight:600;margin-left:4px}
 .stat p{font-size:12px;color:var(--mut);margin-top:2px}
 .stat:first-child b{color:var(--b)}
 canvas{width:100%;height:120px;display:block;margin-top:14px}
-h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--txt);font-weight:700;margin:38px 0 14px;display:flex;align-items:center;gap:10px}
-h2:before{content:"";width:9px;height:9px;background:var(--a);box-shadow:0 0 12px var(--a)}
+.legend{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--mut);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--txt);font-weight:700;margin:38px 0 14px;text-align:center}
+h2:before{content:"";display:inline-block;vertical-align:middle;width:9px;height:9px;margin:0 10px 2px 0;background:var(--a);box-shadow:0 0 12px var(--a)}
+#uses{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
+#uses>*{grid-column:span 12}#uses>.v{grid-column:span 3}#uses>.a{grid-column:span 4}
+@media(max-width:900px){#uses>.v,#uses>.a{grid-column:span 6}#uses>.a:last-child{grid-column:span 12}}
+@media(max-width:600px){#uses>.v,#uses>.a{grid-column:span 12}}
+.tip{position:absolute;z-index:100;max-width:260px;background:#1d140c;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;color:var(--txt);box-shadow:0 10px 30px #0008;text-align:left}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.ghost{background:none;border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:9px 16px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-top:10px}
+.ghost:hover{background:#ffffff12}
+#hist td:not(:first-child){white-space:nowrap}
 .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
 .tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid transparent}
 .ok{background:#c6e86b22;color:var(--ok);border-color:#c6e86b44}.warn{background:#ffc46b22;color:var(--warn);border-color:#ffc46b44}.bad{background:#ff7a5c22;color:var(--bad);border-color:#ff7a5c44}.na{background:#ffffff14;color:var(--mut)}
@@ -92,6 +102,13 @@ table{font-size:13px}
 body:after{opacity:.2}
 }
 @media(max-width:360px){.stats{grid-template-columns:1fr}}
+/* comparison table becomes stacked cards on phones */
+@media(max-width:600px){
+.cmp,.cmp tbody,.cmp tr,.cmp td{display:block;width:100%}.cmp thead{display:none}
+.cmp tr{border-bottom:1px solid #ffffff18;padding:10px 0}.cmp td{border:0;padding:4px 0}
+.cmp td[data-label]:before{content:attr(data-label);display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.cmp td.me{color:var(--c)}
+}
 @media(hover:none){.card,.stat{backdrop-filter:none;-webkit-backdrop-filter:none;background:#ffffff14}}
 html{-webkit-text-size-adjust:100%}button{touch-action:manipulation}
 /* centered layout + smoothness */
@@ -123,7 +140,8 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
 .stats{grid-template-columns:repeat(4,1fr)}
 @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.go{width:100%}}
-#isp{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));justify-items:center;text-align:center}
+#isp{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));justify-items:center;align-items:start!important;text-align:center}
+#isp>#ispSrvNote{grid-column:1/-1;max-width:620px;margin:0 auto}
 #isp>div{flex:none!important;min-width:0!important}
 .grid{justify-content:center}
 /* glow gauge */
@@ -150,27 +168,29 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
 <section class="card hero">
   <div>
     <div class="gauge">
-      <svg viewBox="0 0 220 220"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f28a2e"/><stop offset="1" stop-color="#ffe3b3"/></linearGradient>
+      <svg viewBox="0 0 220 220" aria-hidden="true"><defs><linearGradient id="tg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f28a2e"/><stop offset="1" stop-color="#ffe3b3"/></linearGradient>
         <radialGradient id="gl" cx=".5" cy=".35" r=".8"><stop offset="0" stop-color="#ffffff30"/><stop offset="1" stop-color="#ffffff05"/></radialGradient></defs>
         <circle cx="110" cy="110" r="106" fill="none" stroke="#ffffff22"/>
         <circle cx="110" cy="110" r="70" fill="url(#gl)" stroke="#ffffff30"/>
         <circle cx="110" cy="110" r="70" fill="none" stroke="#f28a2e" stroke-opacity=".25" stroke-width="10" style="filter:blur(10px)"/>
         <circle id="arcGlow" class="arcs" transform="rotate(135 110 110)" cx="110" cy="110" r="93" pathLength="100" stroke="#f28a2e" fill="none" stroke-dasharray="0 100"/>
         <circle id="arc" class="arcs" transform="rotate(135 110 110)" cx="110" cy="110" r="93" pathLength="100" stroke-dasharray="0 100"/>
-        <g id="ticks"></g></svg>
+        <g id="ticks"></g><g id="scale" fill="#c4b39a" font-size="7" font-weight="600" text-anchor="middle" dominant-baseline="middle"></g></svg>
       <div class="gval"><em id="phase">Ready</em><b id="big">0</b><span id="bigUnit">Mbps</span></div>
     </div>
     <button class="go" id="go">Start test</button>
-    <p class="note" id="status" style="text-align:center;margin-top:10px">Tests latency, download, upload, disk and your IP.</p>
+    <p class="note" id="status" role="status" aria-live="polite" style="text-align:center;margin-top:10px">Tests latency, download, upload, disk and your IP.</p>
+    <div class="actions"><button class="ghost" id="copy" hidden>Copy results</button></div>
   </div>
   <div>
     <div class="stats">
       <div class="stat"><small>Download</small><b id="dl">–<u></u></b><p id="dlSub">Getting data from the internet</p></div>
       <div class="stat"><small>Upload</small><b id="ul">–<u></u></b><p id="ulSub">Sending data to the internet</p></div>
       <div class="stat"><small><span class="hint" title="Time for a tiny message to go there and back">Ping</span></small><b id="ping">–<u>ms</u></b><p id="jit">Jitter –</p></div>
-      <div class="stat"><small><span class="hint" title="Percent of tiny messages that never came back">Packet loss</span></small><b id="loss">–<u>%</u></b><p id="lossSub">Lost messages</p></div>
+      <div class="stat"><small><span class="hint" title="Pings that got no reply within 2 seconds. A browser can't see individual lost packets (they are re-sent automatically), so this only catches heavy loss or dropouts.">Dropped pings</span></small><b id="loss">–<u>%</u></b><p id="lossSub">No reply within 2 s</p></div>
     </div>
     <canvas id="chart" width="700" height="220"></canvas>
+    <div class="legend" id="legend"><span><i style="background:#ffb15a"></i>Download</span><span><i style="background:#f6eee2"></i>Upload</span><span id="chartMax"></span></div>
   </div>
 </section>
 
@@ -179,24 +199,26 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
   <div style="min-width:0;max-width:100%"><small class="note">IP ADDRESS</small><div class="big" id="ispIp" style="overflow-wrap:anywhere">–</div><p class="note" id="ispIp6" style="overflow-wrap:anywhere;max-width:220px"></p></div>
   <div><small class="note">LOCATION</small><div class="big" id="ispLoc">–</div></div>
   <div><small class="note">NETWORK (ASN)</small><div class="big" id="ispAsn">–</div></div>
-  <div><small class="note">TEST SERVER</small><div class="big" id="ispSrv">–</div><p class="note" id="ispSrvSub"></p><p class="note" id="ispSrvNote" style="max-width:240px;font-size:12px;margin-top:6px"></p></div>
+  <div><small class="note">TEST SERVER</small><div class="big" id="ispSrv">–</div><p class="note" id="ispSrvSub"></p></div>
+  <p class="note" id="ispSrvNote" style="font-size:12px" hidden></p>
 </section>
 
 <h2>What you can actually do</h2>
-<div class="grid" id="uses"><div class="card note">Run the test to see this.</div></div>
+<div id="uses"><div class="card note">Run the test to see this.</div></div>
 
-<h2>Real vs shared speed</h2>
+<h2>Speed stability</h2>
 <div class="grid">
   <div class="card"><div class="big" id="realTitle">–</div><p class="note" id="realTxt">We compare your peak speed with what you can sustain, and check whether things slow down when the line is busy.</p>
     <div style="margin-top:12px">
       <div class="row"><span><span class="hint" title="Best speed reached in the test — closest to what your plan advertises">Peak speed</span></span><span id="peak">–</span></div>
       <div class="row"><span><span class="hint" title="Median speed over the test — what you get day to day">Sustained speed</span></span><span id="sust">–</span></div>
       <div class="row"><span><span class="hint" title="How steady the speed was. 100% = perfectly flat">Stability</span></span><span id="stab">–</span></div>
-      <div class="row"><span><span class="hint" title="One connection vs many together. Big gap = long distance or a slow path">1 stream vs 4 streams</span></span><span id="multi">–</span></div>
+      <div class="row"><span><span class="hint" title="Speed with one connection vs four at once. Four is usually faster; if one is faster, your ISP or the route is limiting parallel connections.">1 stream vs 4 streams</span></span><span id="multi">–</span></div>
+      <p class="note" id="multiNote" style="margin-top:6px;text-align:left"></p>
     </div></div>
-  <div class="card"><div class="big" id="bbTitle">–</div><p class="note">Bufferbloat: does your connection lag when someone is downloading? Ping is measured while the line is idle, then while it's full.</p>
+  <div class="card"><div class="big" id="bbTitle">–</div><p class="note">Bufferbloat: does your connection lag when someone is downloading or uploading? Ping to a second server is measured while the line is idle, then while it's full.</p>
     <div style="margin-top:12px">
-      <div class="row"><span>Idle ping</span><span id="pIdle">–</span></div>
+      <div class="row"><span>Idle ping (second server)</span><span id="pIdle">–</span></div>
       <div class="row"><span>Ping during download</span><span id="pDl">–</span></div>
       <div class="row"><span>Ping during upload</span><span id="pUl">–</span></div>
     </div></div>
@@ -204,14 +226,14 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
 
 <h2>Your IP — real, shared or hidden?</h2>
 <div class="grid">
-  <div class="card"><div class="big" id="ipTitle">–</div><p class="note" id="ipTxt">Checking…</p>
+  <div class="card"><div class="big" id="ipTitle">–</div><p class="note" id="ipTxt">Runs with the test.</p>
     <div style="margin-top:12px" id="ipRows"></div></div>
   <div class="card"><div class="big">Checks</div><div style="margin-top:8px" id="ipChecks"><p class="note">Runs with the test.</p></div></div>
 </div>
 
 <h2>Disk speed (this device)</h2>
 <div class="grid">
-  <div class="card"><small class="note">READ</small><div class="big" id="rd" style="font-size:28px">–</div><p class="note">Loading data from your storage</p></div>
+  <div class="card"><small class="note">READ</small><div class="big" id="rd" style="font-size:28px">–</div><p class="note">Reading back the test file. Your system usually serves this from memory, so it can read higher than your drive really is.</p></div>
   <div class="card"><small class="note">WRITE</small><div class="big" id="wr" style="font-size:28px">–</div><p class="note" id="diskNote">Saving data to your storage. Measured through the browser, so real-world results can be higher.</p></div>
 </div>
 
@@ -224,14 +246,14 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
 
 <h2>Why Fast.com and Speedtest (Ookla) show different speeds</h2>
 <div class="card">
-  <p class="note" style="margin-bottom:12px">Neither is wrong. They measure <b>different paths</b> with <b>different methods</b>, so the numbers differ. Pulse is shown in the last column so you can see where it fits.</p>
-  <div style="overflow-x:auto"><table>
+  <p class="note" style="margin-bottom:12px">Neither is wrong. They measure <b>different paths</b> with <b>different methods</b>, so the numbers differ. Pulse is shown last so you can see where it fits.</p>
+  <div style="overflow-x:auto"><table class="cmp">
     <thead><tr><th></th><th>Fast.com (Netflix)</th><th>Speedtest (Ookla)</th><th>Pulse (this site)</th></tr></thead>
     <tbody>
     <tr><td><b>What it answers</b></td><td>“How fast is Netflix-style streaming for me?”</td><td>“What is the max my line can do?”</td><td>Speed to <i>this</i> server + full health check</td></tr>
     <tr><td><b>Test server</b></td><td>Netflix Open Connect boxes, often inside your ISP’s network</td><td>Nearby server you (or it) pick — often run by an ISP</td><td>The Cloudflare server your ISP reaches (Mumbai for most Bangladeshi ISPs)</td></tr>
-    <tr><td><b>Connections</b></td><td>Fewer parallel connections, plain HTTPS downloads</td><td>Many parallel connections, tuned to fill your line</td><td>4 parallel down, 3 up</td></tr>
-    <tr><td><b>Averaging</b></td><td>Averages the whole test, stricter</td><td>Drops the slowest &amp; fastest slices, favours peak</td><td>Median of steady samples + peak shown</td></tr>
+    <tr><td><b>Connections</b></td><td>Fewer parallel connections, plain HTTPS downloads</td><td>Many parallel connections, tuned to fill your line</td><td>4 parallel down, 4 up</td></tr>
+    <tr><td><b>Averaging</b></td><td>Averages the whole test, stricter</td><td>Drops the slowest &amp; fastest slices, favours peak</td><td>Download: median after warm-up, peak shown. Upload: average after warm-up</td></tr>
     <tr><td><b>Typical result</b></td><td>Lower, closer to real streaming</td><td>Higher, closer to advertised “up to” speed</td><td>Depends on server distance</td></tr>
     </tbody></table></div>
   <div class="grid" style="margin-top:14px">
@@ -246,14 +268,18 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
 <details><summary>Megabit (Mb) vs Megabyte (MB)</summary><p>A <b>bit</b> is the smallest unit of data. A <b>byte</b> is 8 bits. Internet providers advertise speed in <b>megabits per second (Mbps)</b> because the number looks bigger. Your browser and download managers show <b>megabytes per second (MB/s)</b>. Small b = bit, capital B = byte.</p></details>
 <details><summary>Mega, Giga — how big?</summary><p>1 Gigabit = 1,000 Megabits. 1 Gigabyte = 1,000 Megabytes = 8,000 Megabits. So a <b>1 Gbps</b> line downloads at most <b>125 MB/s</b>.</p></details>
 <details><summary>Download vs upload</summary><p><b>Download</b> = getting data to you (streaming, browsing, game updates). <b>Upload</b> = sending data out (video calls, cloud backups, posting videos). Most home plans have much slower upload.</p></details>
-<details><summary>Ping / latency</summary><p>How long a tiny message takes to reach a server and come back, in milliseconds (ms). Lower is better. Under 30 ms is excellent, under 60 ms is fine for gaming, over 150 ms feels laggy.</p></details>
+<details><summary>Ping / latency</summary><p>How long a tiny message takes to reach a server and come back, in milliseconds (ms). Lower is better. Under 30 ms is excellent, under 50 ms is great for gaming, 50–100 ms is playable, over 150 ms feels laggy.</p></details>
 <details><summary>Jitter</summary><p>How much your ping bounces around. Low jitter = smooth calls and games. High jitter = choppy voice, rubber-banding in games.</p></details>
-<details><summary>Packet loss</summary><p>Data travels in small packets. If some never arrive they must be re-sent, causing stutter. Anything above 1% is worth fixing; above 2.5% hurts calls and games a lot. Weak Wi-Fi is the usual cause.</p></details>
-<details><summary>Bufferbloat</summary><p>When your connection is busy, ping can shoot up because packets queue behind each other. Ping during download much higher than idle ping means one person's download makes everyone else lag.</p></details>
-<details><summary>Real, shared and CGNAT IPs</summary><p>Your <b>public IP</b> is your address on the internet. Some providers put many customers behind one address (<b>CGNAT</b>, range 100.64.x.x) — that's a <b>shared IP</b>: fine for browsing, but a problem for hosting servers, port forwarding and some games. A <b>VPN or proxy</b> replaces your real IP with the VPN server's one.</p></details>
+<details><summary>Packet loss and dropped pings</summary><p>Data travels in small packets. If some never arrive they must be re-sent, causing stutter. Anything above 1% is worth fixing; above 2.5% hurts calls and games a lot. Weak Wi-Fi is the usual cause. A browser can't count lost packets directly (they are re-sent behind the scenes), so Pulse shows <b>dropped pings</b>: pings with no reply within 2 seconds. That catches dropouts and heavy loss, but light loss only shows up as higher ping and jitter.</p></details>
+<details><summary>Bufferbloat</summary><p>When your connection is busy, ping can shoot up because packets queue behind each other. Ping during download or upload much higher than idle ping means one person's download makes everyone else lag.</p></details>
+<details><summary>Real, shared and CGNAT IPs</summary><p>Your <b>public IP</b> is your address on the internet. Many providers put several customers behind the same public address (<b>CGNAT</b>) — that's a <b>shared IP</b>: fine for browsing, but a problem for hosting servers, port forwarding and some games. A website can only spot it sometimes (for example when two servers see two different addresses from you). The sure check: open your router's admin page and compare its <b>WAN IP</b> with the IP shown here. If they differ, or the WAN IP starts with 100.64–100.127, 10. or 192.168., your IP is shared. A <b>VPN or proxy</b> replaces your real IP with the VPN server's one.</p></details>
 <details><summary>Why is my speed lower than my plan?</summary><p>Wi-Fi (walls, distance, 2.4 GHz), many devices at once, an old router, or ISP congestion at busy hours. Try again over an Ethernet cable and compare — that shows your <b>real line speed</b> without Wi-Fi in the way.</p></details>
 
-<footer>Runs on your own server. Speeds are measured between this browser and this server — deploy it near you (or on a fast host) for internet-wide accuracy.</footer>
+<h2>Your recent tests</h2>
+<div class="card"><table><thead><tr><th>When</th><th>Download</th><th>Upload</th><th>Ping</th></tr></thead><tbody id="hist"><tr><td colspan="4" class="note">Your last tests on this device will show here.</td></tr></tbody></table>
+  <p class="note" style="margin-top:10px">Saved only in this browser.</p></div>
+
+<footer>Pulse measures between your browser and the nearest Cloudflare server your ISP reaches. Results change with Wi-Fi, time of day and your ISP's routing — test a few times, ideally over a cable.</footer>
 </div>
 
 <script>
@@ -269,6 +295,8 @@ const setSpeed = (id, mbps) => { const [v,u]=fmtSpeed(mbps); $(id).innerHTML = v
 const median = a => { const s=[...a].sort((x,y)=>x-y); return s.length? s[Math.floor(s.length/2)] : 0; };
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 const tag = (t,c) => `<span class="tag ${c}">${t}</span>`;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const v6wrap = s => esc(s).replace(/:/g, ':<wbr>'); // let long IPv6 addresses break only at colons
 
 // ---------- gauge + chart ----------
 const NT=72; let tickEls=[];
@@ -291,16 +319,25 @@ function _step(){
   _raf=_cur===_tgt?0:requestAnimationFrame(_step);
 }
 buildTicks();
+// Scale labels at 1/10/100/1000 Mbps on the log gauge, written in the current unit.
+function buildScale(){ const g=$('scale'); g.innerHTML='';
+  [1,10,100,1000].forEach(m=>{ const f=Math.log10(1+m)/Math.log10(2001), ang=(135+270*f)*Math.PI/180;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x',110+77*Math.cos(ang)); t.setAttribute('y',110+77*Math.sin(ang));
+    const v=unit==='MBps'?m/8:unit==='gbps'?m/1000:m; t.textContent=+v.toPrecision(3); g.appendChild(t); }); }
+buildScale();
 const chartData = {dl:[],ul:[]};
 function drawChart(){
-  const c=$('chart'), x=c.getContext('2d'), W=c.width, H=c.height;
+  const c=$('chart'), dpr=window.devicePixelRatio||1, cw=c.clientWidth||700, ch=c.clientHeight||120;
+  if(c.width!==Math.round(cw*dpr)||c.height!==Math.round(ch*dpr)){ c.width=Math.round(cw*dpr); c.height=Math.round(ch*dpr); }
+  const x=c.getContext('2d'), W=c.width, H=c.height;
   x.clearRect(0,0,W,H);
   const all=[...chartData.dl,...chartData.ul]; const max=Math.max(10,...all)*1.1;
+  $('chartMax').textContent=all.length?'Top line = '+fmtSpeed(max).join(' '):'';
   x.strokeStyle='#ffffff18'; x.lineWidth=1;
   for(let i=1;i<4;i++){x.beginPath();x.moveTo(0,H*i/4);x.lineTo(W,H*i/4);x.stroke();}
   const line=(d,color)=>{ if(d.length<2)return; const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,color+'55');g.addColorStop(1,color+'00');
     x.beginPath(); d.forEach((v,i)=>{const px=i/Math.max(d.length-1,1)*W,py=H-(v/max)*(H-8)-4; i?x.lineTo(px,py):x.moveTo(px,py)});
-    x.strokeStyle=color;x.lineWidth=3;x.lineJoin='round';x.stroke(); x.lineTo(W,H);x.lineTo(0,H);x.fillStyle=g;x.fill(); };
+    x.strokeStyle=color;x.lineWidth=2*dpr;x.lineJoin='round';x.stroke(); x.lineTo(W,H);x.lineTo(0,H);x.fillStyle=g;x.fill(); };
   line(chartData.dl,'#ffb15a'); line(chartData.ul,'#f6eee2');
 }
 
@@ -308,7 +345,8 @@ function drawChart(){
 // Optional Cloudflare edge (see /cloudflare). Empty string = use this site's own endpoints.
 const EDGE_BASE='https://pulse-speed.rifatnewajrazin.workers.dev'; let USE_EDGE=false;
 const EP=p=>USE_EDGE?EDGE_BASE+({ping:'/ping',up:'/up',ip:'/ip'}[p]):({ping:'/api/ping',up:'/api/upload',ip:'/api/ip'}[p]);
-const DLURL=()=>USE_EDGE?`${EDGE_BASE}/down?bytes=50000000&r=${Math.random()}`:`/dl.bin?r=${Math.random()}`;
+// 8 MB per request: on Cloudflare's free plan a 50 MB response runs out of Worker CPU time and gets cut off mid-stream.
+const DLURL=()=>USE_EDGE?`${EDGE_BASE}/down?bytes=8000000&r=${Math.random()}`:`/dl.bin?r=${Math.random()}`;
 async function pickServer(){ if(!EDGE_BASE) return; try{ const ac=new AbortController(); setTimeout(()=>ac.abort(),2500); const r=await fetch(EDGE_BASE+'/ping?'+Math.random(),{cache:'no-store',signal:ac.signal}); if(r.ok||r.status===204){ USE_EDGE=true; SERVER.fn=null; } }catch{} }
 const SERVER={edge:null,fn:null};
 const REGIONS={DAC:'Dhaka, Bangladesh',CGP:'Chittagong, Bangladesh',ZYL:'Sylhet, Bangladesh',CCU:'Kolkata, India',BOM:'Mumbai, India',MAA:'Chennai, India',SIN:'Singapore',HKG:'Hong Kong',DEL:'Delhi, India',KUL:'Kuala Lumpur',bom1:'Mumbai, India',sin1:'Singapore',hkg1:'Hong Kong',iad1:'Washington DC, USA',sfo1:'San Francisco, USA',cdg1:'Paris, France',fra1:'Frankfurt, Germany',lhr1:'London, UK',syd1:'Sydney, Australia',hnd1:'Tokyo, Japan',dxb1:'Dubai, UAE',cle1:'Cleveland, USA',pdx1:'Portland, USA',gru1:'São Paulo, Brazil',icn1:'Seoul, South Korea',kix1:'Osaka, Japan',arn1:'Stockholm, Sweden',dub1:'Dublin, Ireland',cpt1:'Cape Town, South Africa'};
@@ -317,7 +355,7 @@ function noteServer(r){ const id=r.headers.get('x-vercel-id')||''; const p=id.sp
 // Cloudflare serves free-plan traffic from most Bangladeshi ISPs out of Mumbai/Singapore, not its Dhaka PoP.
 function srvNote(){ const el=$('ispSrvNote'); if(!el) return; const fn=SERVER.fn;
   el.textContent=fn&&PUB?.country_code==='BD'&&!/^(DAC|CGP|ZYL)$/.test(fn)
-    ?'Why not Dhaka? Cloudflare routes most Bangladeshi ISPs to '+(REGIONS[fn]||fn).split(',')[0]+' for sites like this one, so ping here is higher than on tests that use a server inside Bangladesh. Speeds are still accurate for everyday browsing.':''; }
+    ?'Why not Dhaka? Cloudflare routes most Bangladeshi ISPs to '+(REGIONS[fn]||fn).split(',')[0]+' for sites like this one, so ping here is higher than on tests that use a server inside Bangladesh. Speeds are still accurate for everyday browsing.':''; el.hidden=!el.textContent; }
 async function pingOnce(timeout=2000){
   const t0=performance.now(), ac=new AbortController(), to=setTimeout(()=>ac.abort(),timeout);
   try{ const r=await fetch(EP('ping')+'?'+Math.random(),{cache:'no-store',signal:ac.signal}); const ms=performance.now()-t0; if(!SERVER.fn) noteServer(r); return ms; }
@@ -329,9 +367,18 @@ async function pingSeries(n, gap=60){
   return {arr,lost,total:n};
 }
 const jitterOf = a => a.length<2?0:a.slice(1).reduce((s,v,i)=>s+Math.abs(v-a[i]),0)/(a.length-1);
+// Bufferbloat pings go to a second server (this site's own /api/ping) so they don't queue behind the test's
+// own download/upload traffic on the same connection. Falls back to the test server when there is no edge.
+const bbUrl=()=>USE_EDGE?'/api/ping':EP('ping');
+async function bbPing(timeout=2000){
+  const t0=performance.now(), ac=new AbortController(), to=setTimeout(()=>ac.abort(),timeout);
+  try{ await fetch(bbUrl()+'?'+Math.random(),{cache:'no-store',signal:ac.signal}); return performance.now()-t0; }
+  catch{ return null } finally{ clearTimeout(to) }
+}
+async function bbIdle(n=10){ await bbPing(4000); const a=[]; for(let i=0;i<n;i++){ const r=await bbPing(); if(r!=null)a.push(r); await sleep(60);} return median(a); }
 function loadedPinger(){
   const arr=[]; let lost=0, on=true;
-  (async()=>{ while(on){ const r=await pingOnce(3000); if(!on)break; r==null?(lost++,arr.push(3000)):arr.push(r); await sleep(250);} })();
+  (async()=>{ while(on){ const r=await bbPing(3000); if(!on)break; r==null?(lost++,arr.push(3000)):arr.push(r); await sleep(250);} })();
   return ()=>{on=false; return {arr,lost}};
 }
 
@@ -341,40 +388,41 @@ async function downloadTest(streams, seconds, warm, onTick){
   const work=async()=>{ while(!ac.signal.aborted){ try{
       const r=await fetch(DLURL(),{cache:'no-store',signal:ac.signal});
       const rd=r.body.getReader(); for(;;){const {done,value}=await rd.read(); if(done)break; bytes+=value.length;}
-    }catch{ if(ac.signal.aborted)return; await sleep(100);} } };
+    }catch{ if(ac.signal.aborted)return; DLFAIL++; await sleep(100);} } };
   const ws=Array.from({length:streams},work);
   let last=t0,lastB=0,win=[];
   while(performance.now()-t0<seconds*1000){
     await sleep(100); const now=performance.now(); const inst=(bytes-lastB)*8/((now-last)/1000)/1e6; last=now; lastB=bytes;
     win.push(inst); if(win.length>5)win.shift(); const smooth=win.reduce((a,b)=>a+b,0)/win.length;
-    if(now-t0>warm*1000) samples.push(smooth); onTick&&onTick(smooth);
+    const steady=now-t0>warm*1000; if(steady) samples.push(smooth); onTick&&onTick(smooth,steady);
   }
   ac.abort(); await Promise.allSettled(ws); return samples;
 }
 
 // ---------- upload ----------
-let UPFAIL=0,UPERR=0;
-// Long-lived POSTs (1MB then 4MB, under Vercel's 4.5MB cap) measured via upload progress. Final figure = bytes moved between
+let UPFAIL=0,UPERR=0,DLFAIL=0;
+// POSTs (1MB then 2MB — bigger bodies can exceed the free Worker CPU limit and fail with 503/1102) measured via upload progress.
+// A failed request still moved its bytes over the network, so what the browser reported sent is kept, and it is retried quickly. Final figure = bytes moved between
 // warm-up end and test end, so the initial socket-buffer burst doesn't inflate it. Returns live samples; .final holds the result.
 function uploadTest(streams, seconds, warm, onTick){
   return new Promise(resolve=>{
     const mk=n=>{const u=new Uint8Array(n); for(let o=0;o<n;o+=65536) crypto.getRandomValues(u.subarray(o,o+65536)); return new Blob([u],{type:'application/octet-stream'});};
-    const small=mk(1<<20), big=mk(4<<20);
+    const small=mk(1<<20), big=mk(2<<20);
     const t0=performance.now(); const prog=new Array(streams).fill(0), base=new Array(streams).fill(0), sent=new Array(streams).fill(0), xhrs=[];
     let stop=false, tw=null, bw=0; const samples=[]; const hist=[];
     const total=()=>base.reduce((a,b)=>a+b,0)+prog.reduce((a,b)=>a+b,0);
     const launch=i=>{ if(stop)return; const blob=sent[i]++?big:small; const x=new XMLHttpRequest(); xhrs[i]=x; prog[i]=0;
-      x.open('POST',EP('up')+'?'+Math.random());
+      x.open('POST',EP('up')); // fixed URL so the browser can reuse one CORS preflight instead of one per request
       x.upload.onprogress=e=>{prog[i]=Math.min(e.loaded,blob.size)};
-      x.onload=()=>{ if(x.status===200){ base[i]+=blob.size; prog[i]=0; } else {prog[i]=0; UPFAIL++; UPERR=x.status; if(!stop) return void setTimeout(()=>launch(i),500);} launch(i); };
-      x.onerror=()=>{ prog[i]=0; UPFAIL++; if(!stop) setTimeout(()=>launch(i),Math.min(1500,200*UPFAIL)); };
+      x.onload=()=>{ if(x.status===200){ base[i]+=blob.size; prog[i]=0; launch(i); } else { base[i]+=prog[i]; prog[i]=0; UPFAIL++; UPERR=x.status; if(!stop) setTimeout(()=>launch(i),200); } };
+      x.onerror=()=>{ if(stop) return; base[i]+=prog[i]; prog[i]=0; UPFAIL++; setTimeout(()=>launch(i),200); };
       x.send(blob); };
     for(let i=0;i<streams;i++) launch(i);
     const iv=setInterval(()=>{ const now=performance.now(), b=total();
       hist.push([now,b]); while(hist.length>2&&now-hist[0][0]>2000)hist.shift();
       const sm=(b-hist[0][1])*8/Math.max(0.1,(now-hist[0][0])/1000)/1e6;
       if(tw===null&&now-t0>=warm*1000){tw=now;bw=b;}
-      if(tw!==null) samples.push(sm); onTick&&onTick(sm);
+      if(tw!==null) samples.push(sm); onTick&&onTick(sm,tw!==null);
       if(now-t0>seconds*1000){ stop=true; clearInterval(iv); const tb=total(); xhrs.forEach(x=>x&&x.abort());
         const from=tw??t0, bf=tw!==null?bw:0; samples.final=(tb-bf)*8/Math.max(0.5,(now-from)/1000)/1e6; resolve(samples); } },100);
   });
@@ -395,7 +443,8 @@ async function diskTest(){
 }
 
 // ---------- IP ----------
-const HOSTING=/vpn|hosting|cloud|datacenter|data center|server|amazon|aws|google|digitalocean|ovh|hetzner|linode|vultr|m247|mullvad|nord|proton|surfshark|express|choopa|leaseweb|colo|cloudflare|warp|tor exit|proxy/i;
+// Specific VPN / datacenter names only — broad words like "cloud", "server" or "google" matched real home ISPs (e.g. Google Fiber).
+const HOSTING=/\bvpn\b|hosting|datacenter|data cent(er|re)|amazon|\baws\b|google llc|google cloud|microsoft|azure|digitalocean|\bovh\b|hetzner|linode|akamai|vultr|\bm247\b|mullvad|nordvpn|packethub|proton ?ag|surfshark|expressvpn|choopa|leaseweb|cloudflare|oracle cloud|alibaba|tencent cloud|contabo|tor exit|\bproxy\b/i;
 function ipKind(ip){
   if(!ip) return 'unknown';
   if(ip.includes(':')) return /^(::1|fe80|fc|fd)/i.test(ip)?'private':'public';
@@ -411,6 +460,9 @@ async function loadPub(){ if(PUB) return PUB;
   const ip4=v4?.ip&&!v4.ip.includes(':')?v4.ip:null, ip6=v6?.ip?.includes(':')?v6.ip:null;
   const j=await getJ('https://ipwho.is/'+(ip4||ip6||''));
   if(j?.success){ PUB=j; PUB.ip4=ip4; PUB.ip6=ip6||(j.ip.includes(':')?j.ip:null); }
+  else { // ipwho.is down, rate-limited or blocked: fall back to what Cloudflare knows (no ISP name or timezone)
+    const w=await getJ(EDGE_BASE+'/ip');
+    if(w?.ip){ const ip=ip4||w.ip; PUB={ip,ip4,ip6:ip6||(w.ip.includes(':')?w.ip:null),type:ip.includes(':')?'IPv6':'IPv4',city:w.city,country:w.country,country_code:w.country,connection:{asn:w.asn},partial:true}; } }
   return PUB; }
 async function ipTest(){
   const out={checks:[],rows:[],title:'Unknown',cls:'na',txt:''};
@@ -433,13 +485,11 @@ async function ipTest(){
   add('Same IP seen by two servers', !(pub?.ip&&srv.ip)?'Unknown':pool?'No — '+pub.ip+' vs '+srv.ip:'Yes', pool?'warn':'ok');
   add('Shared IP (CGNAT)', cg?'Yes — shared':'Not detected', cg?'warn':'ok');
   let vpn=false;
-  if(pub){ const s=(pub.connection?.isp||'')+' '+(pub.connection?.org||''); const host=HOSTING.test(s); const tzMis=pub.timezone?.id&&pub.timezone.id!==Intl.DateTimeFormat().resolvedOptions().timeZone;
-    add('Datacenter / VPN network', host?'Looks like it':'Residential', host?'bad':'ok');
+  if(pub&&!pub.partial){ const s=(pub.connection?.isp||'')+' '+(pub.connection?.org||''); const host=HOSTING.test(s); const tzMis=pub.timezone?.id&&pub.timezone.id!==Intl.DateTimeFormat().resolvedOptions().timeZone;
+    add('Datacenter / VPN network', host?'Looks like it':'Not detected', host?'bad':'ok');
     add('Timezone matches browser', tzMis?'Mismatch':'Match', tzMis?'warn':'ok'); vpn=host; }
-  else add('IP lookup', 'Unavailable (offline?)','na');
-  add('Proxy headers', srv.viaProxy?'Detected':'None', srv.viaProxy?'warn':'ok');
-  vpn = vpn||srv.viaProxy;
-  if(kind==='public'&&!cg&&!vpn){out.title='Real, dedicated IP';out.cls='ok';out.txt='Looks like your genuine home/office address — no sharing or hiding detected. A browser can\'t see your router, so to be 100% sure, check that your router\'s WAN IP matches this one.';}
+  else add('ISP / VPN lookup', 'Unavailable right now','na');
+  if(kind==='public'&&!cg&&!vpn){out.title='Public IP — no sharing detected';out.cls='ok';out.txt='Nothing here suggests a shared IP, VPN or proxy. A website can\'t see inside your router, though, so this can\'t prove the IP is yours alone. To be sure, compare it with the WAN IP on your router\'s admin page — if they match, it is.';}
   else if(pool){out.title='Likely shared IP (ISP NAT)';out.cls='warn';out.txt='Two servers saw two different public addresses from you within seconds. That happens when your ISP puts many customers behind a shared pool of addresses (CGNAT). Hosting or port-forwarding will not work without asking them for a real IP.';}
   else if(cg){out.title='Shared IP (CGNAT)';out.cls='warn';out.txt='Your ISP shares this address between many customers. Hosting or port-forwarding will not work without asking them.';}
   else if(vpn){out.title='Likely VPN / proxy';out.cls='warn';out.txt='This address looks like a VPN, proxy or datacenter, not your real home connection.';}
@@ -450,17 +500,21 @@ async function ipTest(){
 // ---------- verdicts ----------
 const SPEEDS=[['SD video (480p)',3],['HD video (1080p)',8],['4K Ultra HD',25],['8K video',80]];
 function grade(ok,mid){return ok?['Great','ok']:mid?['OK','warn']:['Struggles','bad']}
+// One bufferbloat scale used by both the Bufferbloat card and the "Many devices" card.
+function bbGrade(r){ const inc=Math.max(r.dlPing,r.ulPing)-r.bbIdle;
+  return inc<30?{inc,g:'A',txt:'A (no bufferbloat)',cls:'ok'}:inc<100?{inc,g:'B',txt:'B (some lag under load)',cls:'warn'}:{inc,g:'C',txt:'C (lag spikes under load)',cls:'bad'}; }
 function renderUses(r){
-  const dl=r.dl, ul=r.ul, p=r.ping, lo=r.loss, jt=r.jitter, bb=r.dlPing;
-  const cards=[];
+  const dl=r.dl, ul=r.ul, p=r.ping, lo=r.loss, jt=r.jitter;
+  const cards=[], head=(icon,n,t,c)=>`<div style="display:flex;justify-content:space-between;gap:8px"><b>${icon} ${n}</b>${tag(t,c)}</div>`;
   SPEEDS.forEach(([n,need])=>{ const cnt=Math.floor(dl/need); const [t,c]=grade(cnt>=1,dl>need*.7);
-    cards.push(`<div class="card"><div style="display:flex;justify-content:space-between"><b>🎬 ${n}</b>${tag(t,c)}</div><p class="note" style="margin-top:6px">Needs ~${need} Mbps. ${cnt>=1?`You can stream about <b>${cnt}</b> at once.`:'Will buffer.'}</p></div>`); });
+    const msg=cnt>=1?`You can stream about <b>${cnt}</b> at once.`:dl>need*.7?'Borderline — may drop quality or buffer at times.':'Will buffer.';
+    cards.push(`<div class="card v">${head('🎬',n,t,c)}<p class="note" style="margin-top:6px">Needs ~${need} Mbps. ${msg}</p></div>`); });
   const gOk=p<50&&lo<1&&jt<15, gMid=p<100&&lo<2.5; const [gt,gc]=grade(gOk,gMid);
-  cards.push(`<div class="card"><div style="display:flex;justify-content:space-between"><b>🎮 Online gaming</b>${tag(gt,gc)}</div><p class="note" style="margin-top:6px">Cares about ping (${p.toFixed(0)} ms), jitter and loss more than raw speed.</p></div>`);
+  cards.push(`<div class="card a">${head('🎮','Online gaming',gt,gc)}<p class="note" style="margin-top:6px">Cares about ping (${p.toFixed(0)} ms), jitter and loss more than raw speed. Under 50 ms is great, under 100 ms is playable.</p></div>`);
   const cOk=ul>=3&&dl>=3&&lo<1&&jt<30; const [ct,cc]=grade(cOk,ul>=1.5&&lo<3);
-  cards.push(`<div class="card"><div style="display:flex;justify-content:space-between"><b>📹 Video calls</b>${tag(ct,cc)}</div><p class="note" style="margin-top:6px">HD calls need ~3 Mbps up and down. Your upload: ${ul.toFixed(1)} Mbps.</p></div>`);
-  const [bt,bc]=grade(bb-p<40,bb-p<100);
-  cards.push(`<div class="card"><div style="display:flex;justify-content:space-between"><b>🏠 Many devices</b>${tag(bt,bc)}</div><p class="note" style="margin-top:6px">${bb-p<40?'Stays responsive when the line is busy.':'Gets laggy when someone downloads.'}</p></div>`);
+  cards.push(`<div class="card a">${head('📹','Video calls',ct,cc)}<p class="note" style="margin-top:6px">HD calls need ~3 Mbps up and down. Your upload: ${fmtSpeed(ul).join(' ')}.</p></div>`);
+  const b=bbGrade(r), [bt,bc]=b.g==='A'?['Great','ok']:b.g==='B'?['OK','warn']:['Struggles','bad'];
+  cards.push(`<div class="card a">${head('🏠','Many devices',bt,bc)}<p class="note" style="margin-top:6px">${b.g==='A'?'Stays responsive when the line is busy.':b.g==='B'?'Gets a little laggy when someone downloads or uploads.':'Gets laggy when someone downloads or uploads.'}</p></div>`);
   $('uses').innerHTML=cards.join('');
 }
 function renderConv(dl,ul){
@@ -471,72 +525,105 @@ function renderConv(dl,ul){
 }
 
 // ---------- orchestration ----------
+let RUNNING=false;
+// Everything that shows a speed goes through here, so switching units updates every number.
+function renderSpeeds(){
+  const r=results; if(!r||r.dl==null) return;
+  setSpeed('dl',r.dl); setSpeed('ul',r.ul);
+  $('peak').textContent=fmtSpeed(r.peak).join(' '); $('sust').textContent=fmtSpeed(r.dl).join(' ');
+  $('multi').textContent=fmtSpeed(r.single).join(' ')+' → '+fmtSpeed(r.dl).join(' ')+' ('+(r.dl/r.single).toFixed(1)+'×)';
+  renderUses(r);
+}
+function renderHistory(){
+  let h=[]; try{ h=JSON.parse(localStorage.pulse||'[]'); }catch{}
+  if(!h.length) return;
+  $('hist').innerHTML=h.slice(0,5).map(x=>`<tr><td>${new Date(x.t).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td><td>${fmtSpeed(x.dl).join(' ')}</td><td>${fmtSpeed(x.ul).join(' ')}</td><td>${Math.round(x.p)} ms</td></tr>`).join('');
+}
 async function run(){
+  if(RUNNING) return; RUNNING=true;
   await pickServer();
   let wl=null; try{ wl=await navigator.wakeLock?.request('screen'); }catch{}
-  const btn=$('go'); btn.disabled=true; btn.textContent='Testing…'; chartData.dl=[];chartData.ul=[]; drawChart();
-  ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='–'); results={};
+  const btn=$('go'); btn.disabled=true; btn.textContent='Testing…'; $('copy').hidden=true; chartData.dl=[];chartData.ul=[]; drawChart();
+  ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='–'); $('ulSub').textContent='Sending data to the internet'; $('dlSub').textContent='Getting data from the internet'; results={};
   try{
     $('status').textContent='Measuring latency…'; gauge(0,'','Ping');
-    const idle=await pingSeries(20,40); const idleMed=median(idle.arr)||0; const jit=jitterOf(idle.arr); const loss=idle.lost/idle.total*100;
-    $('ping').innerHTML=idleMed.toFixed(0)+'<u>ms</u>'; $('jit').textContent='Jitter '+jit.toFixed(1)+' ms'; $('loss').innerHTML=loss.toFixed(1)+'<u>%</u>'; $('lossSub').textContent=idle.lost+' of '+idle.total+' lost';
-    $('pIdle').textContent=idleMed.toFixed(0)+' ms';
+    DLFAIL=0; const idle=await pingSeries(20,40); const idleMed=median(idle.arr)||0; const jit=jitterOf(idle.arr); const loss=idle.lost/idle.total*100;
+    $('ping').innerHTML=idleMed.toFixed(0)+'<u>ms</u>'; $('jit').textContent='Jitter '+jit.toFixed(1)+' ms'; $('loss').innerHTML=loss.toFixed(1)+'<u>%</u>'; $('lossSub').textContent=idle.lost+' of '+idle.total+' got no reply';
+    const bbBase=await bbIdle(10)||idleMed;
+    $('pIdle').textContent=bbBase.toFixed(0)+' ms';
 
     $('status').textContent='Testing one connection…';
     const single=median(await downloadTest(1,3,1,m=>gauge(m,'','Download')))||1;
     $('status').textContent='Testing download…';
     const stopDl=loadedPinger();
-    const dls=await downloadTest(4,8,2,m=>{gauge(m,'','Download');chartData.dl.push(m);drawChart();});
-    const lp=stopDl(); const dlPing=median(lp.arr)||idleMed;
+    const dls=await downloadTest(4,8,2,(m,steady)=>{gauge(m,'','Download'); if(steady){chartData.dl.push(m);drawChart();}});
+    const lp=stopDl(); const dlPing=median(lp.arr)||bbBase;
     const dl=median(dls)||0, peak=[...dls].sort((a,b)=>b-a)[Math.floor(dls.length*0.05)]||dl;
-    setSpeed('dl',dl); $('pDl').textContent=dlPing.toFixed(0)+' ms';
+    setSpeed('dl',dl); $('pDl').textContent=dlPing.toFixed(0)+' ms'; $('dlSub').textContent=DLFAIL>2?'Server cut off '+DLFAIL+' downloads — may read a bit low':'Median after warm-up';
 
     UPFAIL=0;UPERR=0; $('status').textContent='Testing upload…'; const stopUl=loadedPinger();
-    const uls=await uploadTest(4,8,2,m=>{gauge(m,'','Upload');chartData.ul.push(m);drawChart();});
-    const up=stopUl(); const ulPing=median(up.arr)||idleMed; const ul=uls.final||0;
+    const uls=await uploadTest(4,8,2,(m,steady)=>{gauge(m,'','Upload'); if(steady){chartData.ul.push(m);drawChart();}});
+    const up=stopUl(); const ulPing=median(up.arr)||bbBase; const ul=uls.final||0;
     if(!(ul>0)) $('ulSub').textContent=UPERR?'Upload blocked by server (HTTP '+UPERR+')':UPFAIL?'Upload connection failed — retry':'No upload data measured';
+    else $('ulSub').textContent=UPFAIL>2?'Server cut off '+UPFAIL+' uploads — may read a bit low':'Average after warm-up';
     setSpeed('ul',ul); $('pUl').textContent=ulPing.toFixed(0)+' ms';
-    const totalLost=idle.lost, totalSent=idle.total;
-    const lossAll=totalLost/totalSent*100; $('loss').innerHTML=lossAll.toFixed(1)+'<u>%</u>'; $('lossSub').textContent=totalLost+' of '+totalSent+' lost while idle';
 
-    results={dl,ul,ping:idleMed,jitter:jit,loss:lossAll,dlPing,ulPing,peak};
+    results={dl,ul,ping:idleMed,jitter:jit,loss,dlPing,ulPing,bbIdle:bbBase,peak,single};
     $('compareMine').innerHTML='<b>Your result:</b> Pulse measured <b>'+dl.toFixed(0)+' Mbps</b> sustained (peak '+peak.toFixed(0)+'). Expect <b>Ookla</b> to land near the peak or higher, and <b>Fast.com</b> at or a bit below the sustained number. If Fast.com is far below both, your ISP may be slow toward video servers.';
-    gauge(dl,'','Done'); renderUses(results); renderConv(dl,ul);
+    gauge(dl,'','Done'); renderSpeeds(); renderConv(dl,ul);
 
-    // real vs shared
+    // speed stability
     const cv=(()=>{const m=dls.reduce((a,b)=>a+b,0)/(dls.length||1); const sd=Math.sqrt(dls.reduce((s,v)=>s+(v-m)**2,0)/(dls.length||1)); return m?sd/m:1})();
     const stab=Math.max(0,100-cv*100); const ratio=dl/single;
-    $('peak').textContent=fmtSpeed(peak).join(' '); $('sust').textContent=fmtSpeed(dl).join(' '); $('stab').textContent=stab.toFixed(0)+'%';
-    $('multi').textContent=fmtSpeed(single).join(' ')+' → '+fmtSpeed(dl).join(' ')+' ('+ratio.toFixed(1)+'×)';
-    const shared=stab<70||dl<peak*0.7||lossAll>2;
-    $('realTitle').innerHTML=shared?tag('Likely shared / congested','warn'):tag('Looks like a solid, dedicated line','ok');
-    $('realTxt').textContent=shared?'Your speed swings or drops well below its peak — typical of Wi-Fi interference, a busy network or an oversubscribed shared line. Retest on Ethernet at a quiet hour.':'Speed stayed close to its peak with little variation. That is what a healthy, uncongested connection looks like. (This is an estimate from one test.)';
-    const inc=dlPing-idleMed; const [bl,bcx]=inc<30?['A (no bufferbloat)','ok']:inc<100?['B (some lag under load)','warn']:['C (lag spikes under load)','bad'];
-    $('bbTitle').innerHTML=tag('Bufferbloat: '+bl,bcx);
+    $('stab').textContent=stab.toFixed(0)+'%';
+    $('multiNote').textContent=ratio<0.9?'One connection was faster than four. Your ISP or the route to the server is limiting parallel connections — apps that download over many connections (games, updates) may get less than a single stream.':'';
+    const unsteady=stab<70||dl<peak*0.7||loss>2;
+    $('realTitle').innerHTML=unsteady?tag('Unsteady — possibly congested','warn'):tag('Speed stayed steady','ok');
+    $('realTxt').textContent=unsteady?'Your speed swung or dropped well below its peak — typical of Wi-Fi interference, a busy network or a congested line. Retest over a cable at a quiet hour.':'Speed stayed close to its peak with little variation, which is what a healthy, uncongested connection looks like. (One test is only a snapshot.)';
+    const b=bbGrade(results); $('bbTitle').innerHTML=tag('Bufferbloat: '+b.txt,b.cls);
 
     $('status').textContent='Checking disk speed…'; const d=await diskTest();
     if(d){ $('rd').textContent=(d.read/8).toFixed(0)+' MB/s'; $('wr').textContent=(d.write/8).toFixed(0)+' MB/s'; }
     else { $('rd').textContent='n/a'; $('wr').textContent='n/a'; $('diskNote').textContent='Your browser does not allow the disk test (needs Origin Private File System).'; }
     results.disk=d;
 
-    $('status').textContent='Checking your IP…'; const ip=await ipTest();
+    $('status').textContent='Checking your IP…'; const ip=await ipTest(); results.ip=ip;
     $('ipTitle').innerHTML=tag(ip.title,ip.cls); $('ipTxt').textContent=ip.txt;
-    $('ipRows').innerHTML=ip.rows.map(([a,b])=>`<div class="row"><span>${a}</span><span>${b}</span></div>`).join(''); $('ipChecks').innerHTML=ip.checks.join('');
+    $('ipRows').innerHTML=ip.rows.map(([a,b])=>`<div class="row"><span>${esc(a)}</span><span>${String(b).includes(':')&&/^[0-9a-f:]+$/i.test(b)?v6wrap(b):esc(b)}</span></div>`).join(''); $('ipChecks').innerHTML=ip.checks.join('');
     $('status').textContent='Done ✓ '+new Date().toLocaleTimeString()+($('localWarn').hidden?'':' (local test — not internet speed)'); $('phase').textContent='Complete';
     try{const h=JSON.parse(localStorage.pulse||'[]'); h.unshift({t:Date.now(),dl,ul,p:idleMed}); localStorage.pulse=JSON.stringify(h.slice(0,10));}catch{}
+    renderHistory(); $('copy').hidden=false;
   }catch(e){ $('status').textContent='Test failed: '+e.message; }
   try{ wl&&wl.release(); }catch{}
-  btn.disabled=false; btn.textContent='Test again';
+  btn.disabled=false; btn.textContent='Test again'; RUNNING=false;
 }
 $('go').onclick=run;
+$('copy').onclick=async()=>{ const r=results; if(!r||r.dl==null) return;
+  const f=m=>fmtSpeed(m).join(' ');
+  const txt=`Pulse speed test — ${new Date().toLocaleString()}\nDownload: ${f(r.dl)} (peak ${f(r.peak)})\nUpload: ${f(r.ul)}\nPing: ${r.ping.toFixed(0)} ms · Jitter ${r.jitter.toFixed(1)} ms · Dropped pings ${r.loss.toFixed(1)}%\nBufferbloat: ${bbGrade(r).txt}\nServer: ${$('ispSrv').textContent}\nIP check: ${r.ip?.title||'–'}\n${location.origin}`;
+  let ok=false; try{ await navigator.clipboard.writeText(txt); ok=true; }catch{}
+  if(!ok){ const ta=document.createElement('textarea'); ta.value=txt; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;opacity:0;top:0';
+    document.body.appendChild(ta); ta.select(); try{ ok=document.execCommand('copy'); }catch{} ta.remove(); }
+  $('copy').textContent=ok?'Copied ✓':'Copy blocked by browser';
+  setTimeout(()=>{$('copy').textContent='Copy results'},2000); };
 $('unitSeg').onclick=e=>{ const u=e.target.dataset.u; if(!u)return; unit=u; [...$('unitSeg').children].forEach(b=>b.classList.toggle('on',b.dataset.u===u));
-  if(results&&results.dl!=null){ setSpeed('dl',results.dl); setSpeed('ul',results.ul); gauge(results.dl); } else gauge(0); };
+  buildScale(); gauge(_tgt); drawChart(); renderHistory(); if(!RUNNING) renderSpeeds(); };
+// Tap-to-show help for dotted terms (hover tooltips don't exist on phones).
+let tipEl=null;
+document.addEventListener('click',e=>{ const hn=e.target.closest('.hint'); if(tipEl){tipEl.remove();tipEl=null;} if(!hn) return;
+  tipEl=document.createElement('div'); tipEl.className='tip'; tipEl.textContent=hn.title; document.body.appendChild(tipEl);
+  const r=hn.getBoundingClientRect(), w=Math.min(260,innerWidth-24);
+  tipEl.style.left=Math.max(12,Math.min(innerWidth-w-12,r.left+r.width/2-w/2)+scrollX)+'px'; tipEl.style.top=(r.bottom+8+scrollY)+'px'; tipEl.style.width=w+'px'; });
+document.querySelectorAll('.hint').forEach(hn=>{ hn.tabIndex=0; hn.setAttribute('role','button'); hn.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); hn.click(); } }; });
+// Label each comparison cell so the table can stack into cards on phones.
+(()=>{ const heads=[...document.querySelectorAll('.cmp thead th')].map(th=>th.textContent);
+  document.querySelectorAll('.cmp tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{ if(i){ td.dataset.label=heads[i]; if(i===heads.length-1) td.classList.add('me'); } })); })();
 const h=location.hostname; if(/^(localhost|127\.|\[?::1|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h)){ $('localWarn').hidden=false; $('lwHost').textContent=h; }
-gauge(0);
+gauge(0); renderHistory(); addEventListener('resize',()=>drawChart());
 (async()=>{ const p=await loadPub(); let srv={}; try{srv=await (await fetch('/api/ip',{cache:'no-store'})).json()}catch{}
   if(!p){ $('ispName').textContent='Could not detect'; $('ispSub').textContent='IP lookup needs internet access.'; $('ispIp').textContent=srv.ip||'–'; return; }
-  const c=p.connection||{}; $('ispName').textContent=c.isp||c.org||'Unknown'; $('ispSub').textContent=(c.org&&c.org!==c.isp?c.org+' · ':'')+(p.ip4&&p.ip6?'IPv4 + IPv6':p.type||'');
-  $('ispIp').textContent=p.ip4||p.ip; $('ispIp6').textContent=p.ip4&&p.ip6?'IPv6 '+p.ip6:''; $('ispLoc').textContent=[p.city,p.region,p.country].filter(Boolean).join(', ')||'–'; $('ispAsn').textContent=c.asn?('AS'+c.asn):'–'; srvNote(); })();
+  const c=p.connection||{}; $('ispName').textContent=c.isp||c.org||(p.partial?'Unavailable':'Unknown'); $('ispSub').textContent=(c.org&&c.org!==c.isp?c.org+' · ':'')+(p.ip4&&p.ip6?'IPv4 + IPv6':p.type||'');
+  $('ispIp').textContent=p.ip4||p.ip; $('ispIp6').innerHTML=p.ip4&&p.ip6?'IPv6 '+v6wrap(p.ip6):''; $('ispLoc').textContent=[p.city,p.region,p.country].filter(Boolean).join(', ')||'–'; $('ispAsn').textContent=c.asn?('AS'+c.asn):'–'; srvNote(); })();
 </script>
 </body>
 </html>
