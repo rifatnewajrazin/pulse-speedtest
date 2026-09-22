@@ -175,7 +175,7 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
         <circle cx="110" cy="110" r="70" fill="none" stroke="#f28a2e" stroke-opacity=".25" stroke-width="10" style="filter:blur(10px)"/>
         <circle id="arcGlow" class="arcs" transform="rotate(135 110 110)" cx="110" cy="110" r="93" pathLength="100" stroke="#f28a2e" fill="none" stroke-dasharray="0 100"/>
         <circle id="arc" class="arcs" transform="rotate(135 110 110)" cx="110" cy="110" r="93" pathLength="100" stroke-dasharray="0 100"/>
-        <g id="ticks"></g><g id="scale" fill="#c4b39a" fill-opacity=".6" font-size="6.5" font-weight="600" text-anchor="middle" dominant-baseline="middle"></g></svg>
+        <g id="ticks"></g></svg>
       <div class="gval"><em id="phase">Ready</em><b id="big">0</b><span id="bigUnit">Mbps</span></div>
     </div>
     <button class="go" id="go">Start test</button>
@@ -319,12 +319,6 @@ function _step(){
   _raf=_cur===_tgt?0:requestAnimationFrame(_step);
 }
 buildTicks();
-// Scale labels at 1/10/100/1000 Mbps on the log gauge, written in the current unit.
-function buildScale(){ const g=$('scale'); g.innerHTML='';
-  [1,10,100,1000].forEach(m=>{ const f=Math.log10(1+m)/Math.log10(2001), ang=(135+270*f)*Math.PI/180;
-    const t=document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x',110+116*Math.cos(ang)); t.setAttribute('y',110+116*Math.sin(ang));
-    const v=unit==='MBps'?m/8:unit==='gbps'?m/1000:m; t.textContent=+v.toPrecision(3); g.appendChild(t); }); }
-buildScale();
 const chartData = {dl:[],ul:[]};
 function drawChart(){
   const c=$('chart'), dpr=window.devicePixelRatio||1, cw=c.clientWidth||700, ch=c.clientHeight||120;
@@ -607,7 +601,7 @@ $('copy').onclick=async()=>{ const r=results; if(!r||r.dl==null) return;
   $('copy').textContent=ok?'Copied ✓':'Copy blocked by browser';
   setTimeout(()=>{$('copy').textContent='Copy results'},2000); };
 $('unitSeg').onclick=e=>{ const u=e.target.dataset.u; if(!u)return; unit=u; [...$('unitSeg').children].forEach(b=>b.classList.toggle('on',b.dataset.u===u));
-  buildScale(); gauge(_tgt); drawChart(); renderHistory(); if(!RUNNING) renderSpeeds(); };
+  gauge(_tgt); drawChart(); renderHistory(); if(!RUNNING) renderSpeeds(); };
 // Tap-to-show help for dotted terms (hover tooltips don't exist on phones).
 let tipEl=null;
 document.addEventListener('click',e=>{ const hn=e.target.closest('.hint'); if(tipEl){tipEl.remove();tipEl=null;} if(!hn) return;
