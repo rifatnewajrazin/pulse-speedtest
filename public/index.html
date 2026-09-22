@@ -176,7 +176,7 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
 
 <section class="card" id="isp" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:22px;align-items:center">
   <div style="flex:1;min-width:200px"><small class="note">YOUR INTERNET PROVIDER</small><div class="big" id="ispName" style="font-size:22px">Detecting…</div><p class="note" id="ispSub"></p></div>
-  <div><small class="note">IP ADDRESS</small><div class="big" id="ispIp">–</div></div>
+  <div style="min-width:0;max-width:100%"><small class="note">IP ADDRESS</small><div class="big" id="ispIp" style="overflow-wrap:anywhere">–</div><p class="note" id="ispIp6" style="overflow-wrap:anywhere;max-width:220px"></p></div>
   <div><small class="note">LOCATION</small><div class="big" id="ispLoc">–</div></div>
   <div><small class="note">NETWORK (ASN)</small><div class="big" id="ispAsn">–</div></div>
   <div><small class="note">TEST SERVER</small><div class="big" id="ispSrv">–</div><p class="note" id="ispSrvSub"></p></div>
@@ -400,7 +400,14 @@ function ipKind(ip){
   if(a===100&&b>=64&&b<=127) return 'cgnat'; return 'public';
 }
 let PUB=null;
-async function loadPub(){ if(PUB) return PUB; try{ const j=await (await fetch('https://ipwho.is/',{cache:'no-store'})).json(); if(j.success) PUB=j; }catch{} return PUB; }
+async function getJ(u){ try{ return await (await fetch(u,{cache:'no-store'})).json(); }catch{ return null; } }
+// Dual-stack browsers reach ipwho.is over IPv6, so ask IPv4-only / IPv6-only endpoints first and look up the IPv4.
+async function loadPub(){ if(PUB) return PUB;
+  const [v4,v6]=await Promise.all([getJ('https://api4.ipify.org?format=json'),getJ('https://api6.ipify.org?format=json')]);
+  const ip4=v4?.ip&&!v4.ip.includes(':')?v4.ip:null, ip6=v6?.ip?.includes(':')?v6.ip:null;
+  const j=await getJ('https://ipwho.is/'+(ip4||ip6||''));
+  if(j?.success){ PUB=j; PUB.ip4=ip4; PUB.ip6=ip6||(j.ip.includes(':')?j.ip:null); }
+  return PUB; }
 async function ipTest(){
   const out={checks:[],rows:[],title:'Unknown',cls:'na',txt:''};
   let srv={}, pub=null;
@@ -409,12 +416,18 @@ async function ipTest(){
   const seen=pub?.ip||srv.ip, kind=ipKind(seen), srvKind=ipKind(srv.ip);
   const add=(t,ok,cls)=>out.checks.push(`<div class="row"><span>${t}</span><span>${tag(ok,cls)}</span></div>`);
   out.rows.push(['Your public IP',seen||'unknown']);
-  if(pub){ out.rows.push(['Type',pub.type||'–']); out.rows.push(['ISP',pub.connection?.isp||pub.connection?.org||'–']); out.rows.push(['Location',[pub.city,pub.country].filter(Boolean).join(', ')||'–']); out.rows.push(['Timezone',pub.timezone?.id||'–']); }
+  if(pub?.ip6&&pub.ip6!==seen) out.rows.push(['IPv6',pub.ip6]);
+  if(pub){ out.rows.push(['Type',pub.ip4&&pub.ip6?'IPv4 + IPv6':pub.type||'–']); out.rows.push(['ISP',pub.connection?.isp||pub.connection?.org||'–']); out.rows.push(['Location',[pub.city,pub.country].filter(Boolean).join(', ')||'–']); out.rows.push(['Timezone',pub.timezone?.id||'–']); }
   if(srv.ip && srv.ip!==seen) out.rows.push(['Server sees',srv.ip]);
 
-  const cg=kind==='cgnat'||srvKind==='cgnat';
+  // CGNAT from a public pool never shows 100.64.x.x to the outside; the tell is two different
+  // public IPs (same family) seen seconds apart by two servers — the ISP's NAT picked different pool addresses.
+  const fam=ip=>ip.includes(':')?6:4;
+  const pool=!!(pub?.ip&&srv.ip&&pub.ip!==srv.ip&&fam(pub.ip)===fam(srv.ip)&&kind==='public'&&srvKind==='public');
+  const cg=kind==='cgnat'||srvKind==='cgnat'||pool;
   add('Public address', kind==='public'?'Yes':kind==='unknown'?'Unknown':'No ('+kind+')', kind==='public'?'ok':'warn');
-  add('Shared IP (CGNAT)', cg?'Yes — shared':'No — dedicated', cg?'warn':'ok');
+  add('Same IP seen by two servers', !(pub?.ip&&srv.ip)?'Unknown':pool?'No — '+pub.ip+' vs '+srv.ip:'Yes', pool?'warn':'ok');
+  add('Shared IP (CGNAT)', cg?'Yes — shared':'Not detected', cg?'warn':'ok');
   let vpn=false;
   if(pub){ const s=(pub.connection?.isp||'')+' '+(pub.connection?.org||''); const host=HOSTING.test(s); const tzMis=pub.timezone?.id&&pub.timezone.id!==Intl.DateTimeFormat().resolvedOptions().timeZone;
     add('Datacenter / VPN network', host?'Looks like it':'Residential', host?'bad':'ok');
@@ -422,7 +435,8 @@ async function ipTest(){
   else add('IP lookup', 'Unavailable (offline?)','na');
   add('Proxy headers', srv.viaProxy?'Detected':'None', srv.viaProxy?'warn':'ok');
   vpn = vpn||srv.viaProxy;
-  if(kind==='public'&&!cg&&!vpn){out.title='Real, dedicated IP';out.cls='ok';out.txt='Looks like your genuine home/office address — not shared, not hidden.';}
+  if(kind==='public'&&!cg&&!vpn){out.title='Real, dedicated IP';out.cls='ok';out.txt='Looks like your genuine home/office address — no sharing or hiding detected. A browser can\'t see your router, so to be 100% sure, check that your router\'s WAN IP matches this one.';}
+  else if(pool){out.title='Likely shared IP (ISP NAT)';out.cls='warn';out.txt='Two servers saw two different public addresses from you within seconds. That happens when your ISP puts many customers behind a shared pool of addresses (CGNAT). Hosting or port-forwarding will not work without asking them for a real IP.';}
   else if(cg){out.title='Shared IP (CGNAT)';out.cls='warn';out.txt='Your ISP shares this address between many customers. Hosting or port-forwarding will not work without asking them.';}
   else if(vpn){out.title='Likely VPN / proxy';out.cls='warn';out.txt='This address looks like a VPN, proxy or datacenter, not your real home connection.';}
   else {out.title='Local / private address';out.cls='na';out.txt='No public address could be confirmed. Running the test on localhost or offline hides the real one.';}
@@ -517,8 +531,8 @@ const h=location.hostname; if(/^(localhost|127\.|\[?::1|10\.|192\.168\.|172\.(1[
 gauge(0);
 (async()=>{ const p=await loadPub(); let srv={}; try{srv=await (await fetch('/api/ip',{cache:'no-store'})).json()}catch{}
   if(!p){ $('ispName').textContent='Could not detect'; $('ispSub').textContent='IP lookup needs internet access.'; $('ispIp').textContent=srv.ip||'–'; return; }
-  const c=p.connection||{}; $('ispName').textContent=c.isp||c.org||'Unknown'; $('ispSub').textContent=(c.org&&c.org!==c.isp?c.org+' · ':'')+(p.type||'');
-  $('ispIp').textContent=p.ip; $('ispLoc').textContent=[p.city,p.region,p.country].filter(Boolean).join(', ')||'–'; $('ispAsn').textContent=c.asn?('AS'+c.asn):'–'; })();
+  const c=p.connection||{}; $('ispName').textContent=c.isp||c.org||'Unknown'; $('ispSub').textContent=(c.org&&c.org!==c.isp?c.org+' · ':'')+(p.ip4&&p.ip6?'IPv4 + IPv6':p.type||'');
+  $('ispIp').textContent=p.ip4||p.ip; $('ispIp6').textContent=p.ip4&&p.ip6?'IPv6 '+p.ip6:''; $('ispLoc').textContent=[p.city,p.region,p.country].filter(Boolean).join(', ')||'–'; $('ispAsn').textContent=c.asn?('AS'+c.asn):'–'; })();
 </script>
 </body>
 </html>
