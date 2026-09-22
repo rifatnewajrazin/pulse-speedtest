@@ -4,166 +4,183 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#14100c">
-<title>Pulse — Internet Speed Test</title>
-<meta name="description" content="Fast, honest internet speed test: download, upload, latency, jitter, packet loss, streaming, disk speed and IP check.">
+<title>Pulse - Internet Speed Test</title>
+<meta name="description" content="Fast, honest internet speed test: download, upload, ping, jitter, dropped pings, bufferbloat, streaming, disk speed and an IP check, explained in plain English.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://speed.rifatnewajrazin.com/">
+<meta property="og:title" content="Pulse - Internet Speed Test">
+<meta property="og:description" content="Download, upload, ping, bufferbloat and an IP check, explained in plain English.">
+<meta property="og:image" content="https://speed.rifatnewajrazin.com/pulse-internet-speed-test-bangladesh.webp">
+<meta property="og:image:type" content="image/webp"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Pulse internet speed test: a glowing speed gauge with the Pulse wordmark">
+<meta name="twitter:card" content="summary_large_image">
 <style>
+/* Tokens. Spacing follows the 4-point scale; radius follows the Design & UI guidelines
+   (buttons 6-8px, cards 8-12px, pills fully rounded). */
 :root{
-  --bg:#080503;--card:#ffffff10;--card2:#ffffff0d;--line:#ffffff24;--txt:#f6eee2;--mut:#c4b39a;
+  --bg:#080503;--card2:#ffffff0d;--line:#ffffff24;--txt:#f6eee2;--mut:#c4b39a;
   --a:#f28a2e;--b:#ffc46b;--c:#ffe3b3;--ok:#c6e86b;--warn:#ffc46b;--bad:#ff7a5c;
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;--space-16:64px;
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-pill:999px;
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 *{box-sizing:border-box;margin:0}
-html{background:var(--bg)}
-body{color:var(--txt);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;
+html{background:var(--bg);-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{color:var(--txt);font:15px/24px var(--font);font-feature-settings:"cv11";-webkit-font-smoothing:antialiased;min-height:100vh;
   background:
    radial-gradient(900px 620px at 50% -140px,#e6bd7ecc,transparent 70%),
    radial-gradient(700px 500px at 105% 30%,#c4661f66,transparent 70%),
    radial-gradient(900px 600px at 10% 105%,#e08a2e88,transparent 70%),
-   radial-gradient(600px 500px at -5% 40%,#6b3a1533,transparent 70%),var(--bg);background-attachment:fixed}
+   radial-gradient(600px 500px at -5% 40%,#6b3a1533,transparent 70%),var(--bg)}
 /* film grain */
-body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;opacity:.32;mix-blend-mode:overlay;
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;opacity:.06;transform:translateZ(0);
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
-.wrap{max-width:1120px;margin:0 auto;padding:20px 16px 60px;position:relative;z-index:1}
-header{display:flex;justify-content:space-between;align-items:center;padding:6px 0 10px}
-.logo{font-weight:900;font-size:26px;letter-spacing:-.04em;display:flex;gap:2px;align-items:baseline}
-.logo i{display:none}.logo b{color:var(--a)}
-.seg{display:inline-flex;background:#ffffff12;border:1px solid var(--line);border-radius:12px;padding:3px;backdrop-filter:blur(18px)}
-.seg button{background:none;border:0;color:var(--txt);padding:6px 14px;border-radius:9px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:.75}
+button{touch-action:manipulation;font:inherit}
+:focus-visible{outline:2px solid var(--b);outline-offset:2px}
+.icon{width:20px;height:20px;flex:none;display:inline-block;vertical-align:middle;fill:currentColor}
+
+/* layout */
+.wrap{max-width:1120px;margin:0 auto;padding:var(--space-6) var(--space-4) var(--space-16);position:relative;z-index:1;text-align:center}
+header{display:flex;flex-direction:column;align-items:center;gap:var(--space-3);padding:var(--space-2) 0}
+.logo{font-weight:900;font-size:26px;line-height:32px;letter-spacing:-.04em}
+.logo b{color:var(--a)}
+.seg{display:inline-flex;gap:var(--space-1);background:#ffffff12;border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--space-1);backdrop-filter:blur(18px)}
+.seg button{position:relative;min-height:36px;background:none;border:0;color:var(--txt);padding:0 var(--space-4);border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;opacity:.75;transition:background .15s,opacity .15s}
+.seg button:after{content:"";position:absolute;inset:calc(-1 * var(--space-1)) 0} /* 44px touch target */
+.seg button:not(.on):hover{background:#ffffff14;opacity:1}
 .seg button.on{background:#f6eee2;color:#1a0f06;opacity:1}
-.pill{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:#00000040;backdrop-filter:blur(14px);border-radius:12px;padding:8px 14px;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
-.pill:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--a);box-shadow:0 0 10px var(--a)}
-.headline{font-size:clamp(34px,6.4vw,72px);line-height:.98;font-weight:800;letter-spacing:-.035em;text-transform:uppercase;margin:18px 0 18px;
+.eyebrow{display:inline-flex;gap:var(--space-2);align-items:center;color:var(--mut);font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:var(--space-4)}
+.eyebrow:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a)}
+.headline{font-size:clamp(34px,6.4vw,72px);line-height:1.08;font-weight:800;letter-spacing:-.035em;text-transform:uppercase;margin:var(--space-4) auto;
   background:linear-gradient(180deg,#fff8ec 30%,#c9b79c);-webkit-background-clip:text;background-clip:text;color:transparent}
-.intro{display:flex;gap:16px;align-items:flex-start;max-width:560px;margin-bottom:26px;color:#f6eee2dd;font-size:16px}
-.pix{flex:none;width:34px;height:64px;background:
-  conic-gradient(from 0deg at 50% 50%,transparent 0) ,
-  repeating-linear-gradient(0deg,#f28a2e 0 6px,transparent 6px 9px);-webkit-mask:repeating-linear-gradient(90deg,#000 0 6px,transparent 6px 9px);mask:repeating-linear-gradient(90deg,#000 0 6px,transparent 6px 9px);opacity:.9}
-.card{background:linear-gradient(160deg,#ffffff1c,#ffffff08);border:1px solid var(--line);border-radius:24px;padding:22px;backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);
-  box-shadow:0 1px 0 #ffffff33 inset,0 20px 60px #0006}
-.hero{display:grid;grid-template-columns:minmax(290px,400px) 1fr;gap:22px;align-items:center}
-@media(max-width:780px){.hero{grid-template-columns:1fr}}
-.gauge{position:relative;width:100%;max-width:360px;margin:0 auto}
-.gauge svg{width:100%;display:block;overflow:visible}
-.tk{stroke:#ffffff30;stroke-width:1.6;stroke-linecap:round;transition:stroke .15s}
-.tk.on{stroke:url(#tg);filter:drop-shadow(0 0 3px #f28a2e)}
-.gval{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.gval b{font-size:52px;letter-spacing:-.04em;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
-.gval span{color:var(--mut);font-size:14px;margin-top:4px}
-.gval em{font-style:normal;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--b);font-weight:700;margin-bottom:8px}
-.go{display:block;margin:10px auto 0;border:0;border-radius:14px;padding:14px 40px;font:inherit;font-weight:700;font-size:15px;color:#1a0f06;cursor:pointer;background:#f6eee2;box-shadow:0 0 0 1px #fff inset,0 10px 40px #f28a2e88;transition:transform .15s,box-shadow .15s}
-.go:hover{transform:translateY(-2px);box-shadow:0 0 0 1px #fff inset,0 14px 54px #f28a2ecc}.go:disabled{opacity:.6;cursor:wait;transform:none}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.stat{background:linear-gradient(160deg,#ffffff1a,#ffffff08);border:1px solid var(--line);border-radius:18px;padding:16px;position:relative;backdrop-filter:blur(20px)}
-.stat small{color:var(--mut);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;display:flex;gap:6px;align-items:center}
-.stat b{font-size:30px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.stat b u{text-decoration:none;font-size:13px;color:var(--mut);font-weight:600;margin-left:4px}
-.stat p{font-size:12px;color:var(--mut);margin-top:2px}
-.stat:first-child b{color:var(--b)}
-canvas{width:100%;height:120px;display:block;margin-top:14px}
-.legend{display:flex;gap:16px;justify-content:center;font-size:12px;color:var(--mut);margin-top:8px}
-.legend i{display:inline-block;width:10px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
-h2{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--txt);font-weight:700;margin:38px 0 14px;text-align:center}
-h2:before{content:"";display:inline-block;vertical-align:middle;width:9px;height:9px;margin:0 10px 2px 0;background:var(--a);box-shadow:0 0 12px var(--a)}
-#uses{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
-#uses>*{grid-column:span 12}#uses>.v{grid-column:span 3}#uses>.a{grid-column:span 4}
-@media(max-width:900px){#uses>.v,#uses>.a{grid-column:span 6}#uses>.a:last-child{grid-column:span 12}}
-@media(max-width:600px){#uses>.v,#uses>.a{grid-column:span 12}}
-.tip{position:absolute;z-index:100;max-width:260px;background:#1d140c;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;color:var(--txt);box-shadow:0 10px 30px #0008;text-align:left}
-.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.ghost{background:none;border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:9px 16px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-top:10px}
-.ghost:hover{background:#ffffff12}
-#hist td:not(:first-child){white-space:nowrap}
-.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
-.tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid transparent}
-.ok{background:#c6e86b22;color:var(--ok);border-color:#c6e86b44}.warn{background:#ffc46b22;color:var(--warn);border-color:#ffc46b44}.bad{background:#ff7a5c22;color:var(--bad);border-color:#ff7a5c44}.na{background:#ffffff14;color:var(--mut)}
-.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff18;font-size:14px}
-.row:last-child{border:0}.row span:first-child{color:var(--mut)}.row span:last-child{text-align:right;font-weight:600}
-.big{font-size:17px;font-weight:700;margin-bottom:4px}
-.note{color:var(--mut);font-size:13px}
-.bar{height:6px;background:#ffffff18;border-radius:9px;overflow:hidden;margin:8px 0 4px}
-.bar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--a),var(--b));width:0;transition:width .6s}
-table{width:100%;border-collapse:collapse;font-size:14px}
-td,th{padding:10px 6px;border-bottom:1px solid #ffffff18;text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.1em}
-details{background:linear-gradient(160deg,#ffffff14,#ffffff08);border:1px solid var(--line);backdrop-filter:blur(20px);border-radius:16px;padding:14px 18px;margin-bottom:10px}
-summary{cursor:pointer;font-weight:700}details p{color:var(--mut);margin-top:8px;font-size:14px}
-details p b{color:var(--txt)}
-.hint{cursor:help;border-bottom:1px dotted var(--mut)}
-footer{margin-top:40px;color:var(--mut);font-size:12px;text-align:center}
-@media(max-width:600px){
-.wrap{padding:14px max(12px,env(safe-area-inset-right)) 48px max(12px,env(safe-area-inset-left))}
-.card{padding:16px;border-radius:20px}
-.stats{gap:10px}.stat b{font-size:24px}
-.gval b{font-size:42px}
-.go{width:100%;padding:16px}
-.seg button{padding:9px 12px}
-.intro{font-size:15px}.pix{width:24px;height:48px}
-.grid{grid-template-columns:1fr}
-.row{font-size:13px}
-table{font-size:13px}
-body:after{opacity:.2}
-}
-@media(max-width:360px){.stats{grid-template-columns:1fr}}
-/* comparison table becomes stacked cards on phones */
-@media(max-width:600px){
-.cmp,.cmp tbody,.cmp tr,.cmp td{display:block;width:100%}.cmp thead{display:none}
-.cmp tr{border-bottom:1px solid #ffffff18;padding:10px 0}.cmp td{border:0;padding:4px 0}
-.cmp td[data-label]:before{content:attr(data-label);display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
-.cmp td.me{color:var(--c)}
-}
-@media(hover:none){.card,.stat{backdrop-filter:none;-webkit-backdrop-filter:none;background:#ffffff14}}
-html{-webkit-text-size-adjust:100%}button{touch-action:manipulation}
-/* centered layout + smoothness */
-body{background-attachment:scroll!important}
-.wrap{text-align:center}
-header{flex-direction:column;gap:12px;justify-content:center}
-.pill{margin:0 auto}
-.headline{margin-left:auto;margin-right:auto}
-.intro{margin-left:auto;margin-right:auto;text-align:left;justify-content:center;align-items:center}
-h2{justify-content:center}
-.hero{justify-items:center;text-align:center}.hero>div{width:100%}
-.stat,.card{text-align:center}.stat small{justify-content:center}
-.row{text-align:left}details,table,.grid .card .row{text-align:left}
-#isp{justify-content:center;text-align:center}
-.card,.stat,details{contain:layout paint}
-.tk{filter:none!important;transition:none}
-.tk.on{filter:none}
-.go,.seg button,.bar i{will-change:transform}
-.go:active{transform:scale(.97)}
-html{scroll-behavior:smooth}
-body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
-.gauge svg,canvas{transform:translateZ(0)}
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
-/* symmetric single-column hero */
-.hero{grid-template-columns:1fr!important;gap:26px;justify-items:center}
-.hero>div{max-width:920px}
-.gauge{max-width:380px}
-.go{width:auto;min-width:220px;margin:14px auto 0}
-.stats{grid-template-columns:repeat(4,1fr)}
-@media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){.go{width:100%}}
-#isp{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));justify-items:center;align-items:start!important;text-align:center}
-#isp>#ispSrvNote{grid-column:1/-1;max-width:620px;margin:0 auto}
-#isp>div{flex:none!important;min-width:0!important}
-.grid{justify-content:center}
-/* glow gauge */
+.intro{max-width:560px;margin:0 auto var(--space-6);color:#f6eee2dd;font-size:16px}
+
+.card{background:linear-gradient(160deg,#ffffff1c,#ffffff08);border:1px solid var(--line);border-radius:var(--radius-lg);padding:var(--space-6);text-align:center;
+  backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);box-shadow:0 1px 0 #ffffff33 inset,0 20px 60px #0006;contain:layout paint}
+.card-warn{margin-bottom:var(--space-4);border-color:var(--warn);background:#fbbf2410}
+.card-warn b{color:var(--warn);display:inline-flex;gap:var(--space-2);align-items:center}
+.grid{display:grid;gap:var(--space-3);grid-template-columns:repeat(auto-fit,minmax(230px,1fr));justify-content:center}
+.label{display:block;color:var(--mut);font-size:12px;line-height:16px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:var(--space-2)}
+.big{font-size:17px;line-height:24px;font-weight:700;margin-bottom:var(--space-1)}
+.big-xl{font-size:28px;line-height:36px}
+.note{color:var(--mut);font-size:13px;line-height:20px}
+.mt-1{margin-top:var(--space-1)}.mt-2{margin-top:var(--space-2)}.mt-3{margin-top:var(--space-3)}.mt-4{margin-top:var(--space-4)}
+.left{text-align:left}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr;gap:var(--space-6);justify-items:center}
+.hero>div{width:100%;max-width:920px}
+.gauge{position:relative;width:100%;max-width:380px;margin:0 auto}
+.gauge svg{width:100%;display:block;overflow:visible;transform:translateZ(0)}
+.tk{stroke:#ffffff30;stroke-width:1.6;stroke-linecap:round}
 #arc{fill:none;stroke:#f28a2e;stroke-width:5;stroke-linecap:round;opacity:0}
 #arcGlow{filter:blur(6px);stroke-width:9;opacity:0}
 .gauge.live #arcGlow{animation:breathe 1.6s ease-in-out infinite}
 @keyframes breathe{50%{opacity:.55}}
-.gval b{text-shadow:0 0 24px #f28a2e66;transition:text-shadow .4s}
+.gval{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gval b{font-size:52px;letter-spacing:-.04em;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 24px #f28a2e66;transition:text-shadow .4s}
+.gval span{color:var(--mut);font-size:14px;margin-top:var(--space-1)}
+.gval em{font-style:normal;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--b);font-weight:700;margin-bottom:var(--space-2)}
+/* primary button: glow comes from the button's own cream fill, kept close and restrained */
+.go{display:block;min-width:220px;min-height:48px;margin:var(--space-4) auto 0;border:0;border-radius:var(--radius-md);padding:var(--space-3) var(--space-10);font-weight:700;font-size:15px;color:#1a0f06;cursor:pointer;background:#f6eee2;
+  box-shadow:0 0 0 1px #fff inset,0 0 24px #f6eee266;transition:transform .15s,box-shadow .15s;will-change:transform}
+.go:hover{transform:translateY(-2px);box-shadow:0 0 0 1px #fff inset,0 0 26px #f6eee273}
+.go:active{transform:scale(.97)}
+.go:disabled{opacity:.6;cursor:wait;transform:none}
+.actions{display:flex;gap:var(--space-3);justify-content:center;flex-wrap:wrap}
+.ghost{min-height:44px;background:none;border:1px solid var(--line);color:var(--txt);border-radius:var(--radius-md);padding:0 var(--space-4);font-size:13px;font-weight:600;cursor:pointer;margin-top:var(--space-2);transition:background .15s}
+.ghost:hover{background:#ffffff12}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3)}
+.stat{background:linear-gradient(160deg,#ffffff1a,#ffffff08);border:1px solid var(--line);border-radius:var(--radius-lg);padding:var(--space-4);backdrop-filter:blur(20px);contain:layout paint}
+.stat small{display:block;color:var(--mut);font-size:12px;line-height:16px;font-weight:600;text-transform:uppercase;letter-spacing:.1em}
+.stat b{display:block;font-size:30px;line-height:40px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:var(--space-1)}
+.stat b u{text-decoration:none;font-size:13px;color:var(--mut);font-weight:600;margin-left:var(--space-1)}
+.stat p{font-size:12px;line-height:16px;color:var(--mut);margin-top:var(--space-1)}
+.stat:first-child b{color:var(--b)}
+canvas{width:100%;height:120px;display:block;margin-top:var(--space-4);transform:translateZ(0)}
+.legend{display:flex;gap:var(--space-4);justify-content:center;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:var(--space-2)}
+.legend i{display:inline-block;width:12px;height:4px;border-radius:2px;vertical-align:middle;margin-right:var(--space-2)}
+
+/* sections */
+h2{font-size:12px;line-height:16px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;margin:var(--space-10) 0 var(--space-4)}
+h2:before{content:"";display:inline-block;vertical-align:middle;width:8px;height:8px;margin:0 var(--space-3) 2px 0;background:var(--a);box-shadow:0 0 12px var(--a)}
+#isp{margin-top:var(--space-4);display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:var(--space-6)}
+#isp>div{flex:1 1 180px;min-width:0;max-width:100%}
+#ispName{font-size:22px;line-height:28px}
+#ispSrvNote{flex:1 1 100%;max-width:620px;margin:0 auto;font-size:12px}
+.wrap-any{overflow-wrap:anywhere}
+#uses{display:grid;gap:var(--space-3);grid-template-columns:repeat(12,1fr)}
+#uses>*{grid-column:span 12}#uses>.v{grid-column:span 3}#uses>.a{grid-column:span 4}
+.use-head{display:flex;gap:var(--space-2);align-items:center;justify-content:center;font-weight:700}
+.use .tag{margin-top:var(--space-2)}
+.sub{background:var(--card2);border-radius:var(--radius-md);padding:var(--space-4)}
+.tag{display:inline-block;font-size:12px;line-height:16px;font-weight:700;padding:var(--space-1) var(--space-3);border-radius:var(--radius-pill);border:1px solid transparent}
+.ok{background:#c6e86b22;color:var(--ok);border-color:#c6e86b44}.warn{background:#ffc46b22;color:var(--warn);border-color:#ffc46b44}.bad{background:#ff7a5c22;color:var(--bad);border-color:#ff7a5c44}.na{background:#ffffff14;color:var(--mut)}
+.row{display:flex;justify-content:space-between;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid #ffffff18;font-size:14px;text-align:left}
+.row:last-child,.row:last-of-type{border:0}
+#multiNote:empty{display:none}.row span:first-child{color:var(--mut)}.row span:last-child{text-align:right;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:14px;text-align:left}
+td,th{padding:var(--space-3) var(--space-2);border-bottom:1px solid #ffffff18;text-align:left;vertical-align:top}
+th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.1em}
+.conv td:first-child{width:22%}.conv td:nth-child(2){width:40%}
+#hist td:not(:first-child){white-space:nowrap}
+details{background:linear-gradient(160deg,#ffffff14,#ffffff08);border:1px solid var(--line);backdrop-filter:blur(20px);border-radius:var(--radius-lg);margin-bottom:var(--space-3);text-align:left;contain:layout paint}
+summary{cursor:pointer;font-weight:700;min-height:48px;padding:var(--space-3) var(--space-4);display:flex;align-items:center;gap:var(--space-2);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary:before{content:"";width:0;height:0;border-left:6px solid var(--mut);border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s;flex:none}
+details[open] summary:before{transform:rotate(90deg)}
+details p{color:var(--mut);font-size:14px;padding:0 var(--space-4) var(--space-4)}
+details p b{color:var(--txt)}
+/* dotted help terms: the padding enlarges the tap area to about 44px without moving the layout */
+.hint{position:relative;z-index:1;cursor:help;text-decoration:underline dotted var(--mut);text-decoration-thickness:1px;text-underline-offset:4px;padding:var(--space-4) var(--space-1);margin:0 calc(-1 * var(--space-1))}
+.tip{position:absolute;z-index:100;max-width:260px;background:#1d140c;border:1px solid var(--line);border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);font-size:13px;line-height:20px;color:var(--txt);box-shadow:0 10px 30px #0008;text-align:left}
+footer{margin-top:var(--space-10);color:var(--mut);font-size:12px;line-height:20px}
+
+/* responsive */
+@media(max-width:900px){#uses>.v,#uses>.a{grid-column:span 6}#uses>.a:last-child{grid-column:span 12}}
+@media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){
+.wrap{padding:var(--space-3) max(var(--space-4),env(safe-area-inset-right)) var(--space-12) max(var(--space-4),env(safe-area-inset-left))}
+header{flex-direction:row;justify-content:space-between}
+.eyebrow{margin-top:var(--space-3)}
+.headline{font-size:30px;margin:var(--space-2) auto var(--space-3)}
+.intro{font-size:15px;line-height:22px;margin-bottom:var(--space-4)}
+.card{padding:var(--space-4)}
+.hero{gap:var(--space-4)}
+.gauge{max-width:260px}
+.gval b{font-size:42px}
+.go{width:100%}
+.stat b{font-size:24px;line-height:32px}
+.grid{grid-template-columns:1fr}
+#uses>.v,#uses>.a{grid-column:span 12}
+.row,table{font-size:13px}
+.cmp,.cmp tbody,.cmp tr,.cmp td{display:block;width:100%}.cmp thead{display:none}
+.cmp tr{border-bottom:1px solid #ffffff18;padding:var(--space-3) 0}.cmp td{border:0;padding:var(--space-1) 0}
+.cmp td[data-label]:before{content:attr(data-label);display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.cmp td.me{color:var(--c)}
+.conv td:first-child,.conv td:nth-child(2){width:auto}
+}
+@media(max-width:360px){.stats{grid-template-columns:1fr}}
+@media(max-width:600px) and (max-height:720px){.gauge{max-width:200px}.gval b{font-size:36px}} /* keep Start test on the first screen of small phones */
+@media(hover:none){.card,.stat{backdrop-filter:none;-webkit-backdrop-filter:none;background:#ffffff14}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
   <div class="logo">Pulse<b>.</b></div>
-  <div class="seg" id="unitSeg" title="Display units"><button data-u="mbps" class="on">Mbps</button><button data-u="MBps">MB/s</button><button data-u="gbps">Gbps</button></div>
+  <div class="seg" id="unitSeg" role="group" aria-label="Display units"><button data-u="mbps" class="on">Mbps</button><button data-u="MBps">MB/s</button><button data-u="gbps">Gbps</button></div>
 </header>
 
-<div class="pill">Internet speed lab</div>
+<div class="eyebrow">Internet speed lab</div>
 <h1 class="headline">Internet speed,<br>measured honestly</h1>
-<div class="intro"><div class="pix"></div><p>Download, upload, ping, packet loss, streaming, disk speed and your IP — all explained in plain English.</p></div>
+<p class="intro">Download, upload, ping, dropped pings, streaming, disk speed and your IP, all explained in plain English.</p>
 
-<div id="localWarn" class="card" hidden style="margin-bottom:14px;border-color:var(--warn);background:#fbbf2410"><b style="color:var(--warn)">⚠ You are testing your own computer, not the internet.</b><p class="note" style="margin-top:4px">This page is served from <span id="lwHost"></span>, so download/upload only measure your machine (or local network) talking to itself and will look impossibly fast. Ping, jitter and loss are also not real internet numbers. Put this site on a remote server and open it from your phone or another network for true results.</p></div>
+<div id="localWarn" class="card card-warn" hidden><b><svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"/></svg>You are testing your own computer, not the internet.</b><p class="note mt-1">This page is served from <span id="lwHost"></span>, so download and upload only measure your machine (or local network) talking to itself and will look impossibly fast. Ping, jitter and dropped pings are not real internet numbers either. Open the live site from your phone or another network for true results.</p></div>
 
 <section class="card hero">
   <div>
@@ -179,28 +196,28 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
       <div class="gval"><em id="phase">Ready</em><b id="big">0</b><span id="bigUnit">Mbps</span></div>
     </div>
     <button class="go" id="go">Start test</button>
-    <p class="note" id="status" role="status" aria-live="polite" style="text-align:center;margin-top:10px">Tests latency, download, upload, disk and your IP.</p>
+    <p class="note mt-2" id="status" role="status" aria-live="polite">Tests latency, download, upload, disk and your IP.</p>
     <div class="actions"><button class="ghost" id="copy" hidden>Copy results</button></div>
   </div>
   <div>
     <div class="stats">
-      <div class="stat"><small>Download</small><b id="dl">–<u></u></b><p id="dlSub">Getting data from the internet</p></div>
-      <div class="stat"><small>Upload</small><b id="ul">–<u></u></b><p id="ulSub">Sending data to the internet</p></div>
-      <div class="stat"><small><span class="hint" title="Time for a tiny message to go there and back">Ping</span></small><b id="ping">–<u>ms</u></b><p id="jit">Jitter –</p></div>
-      <div class="stat"><small><span class="hint" title="Pings that got no reply within 2 seconds. A browser can't see individual lost packets (they are re-sent automatically), so this only catches heavy loss or dropouts.">Dropped pings</span></small><b id="loss">–<u>%</u></b><p id="lossSub">No reply within 2 s</p></div>
+      <div class="stat"><small>Download</small><b id="dl">-<u></u></b><p id="dlSub">Getting data from the internet</p></div>
+      <div class="stat"><small>Upload</small><b id="ul">-<u></u></b><p id="ulSub">Sending data to the internet</p></div>
+      <div class="stat"><small><span class="hint" title="Time for a tiny message to go there and back">Ping</span></small><b id="ping">-<u>ms</u></b><p id="jit">Jitter -</p></div>
+      <div class="stat"><small><span class="hint" title="Pings that got no reply within 2 seconds. A browser can't see individual lost packets (they are re-sent automatically), so this only catches heavy loss or dropouts.">Dropped pings</span></small><b id="loss">-<u>%</u></b><p id="lossSub">No reply within 2 s</p></div>
     </div>
     <canvas id="chart" width="700" height="220"></canvas>
     <div class="legend" id="legend"><span><i style="background:#ffb15a"></i>Download</span><span><i style="background:#f6eee2"></i>Upload</span><span id="chartMax"></span></div>
   </div>
 </section>
 
-<section class="card" id="isp" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:22px;align-items:center">
-  <div style="flex:1;min-width:200px"><small class="note">YOUR INTERNET PROVIDER</small><div class="big" id="ispName" style="font-size:22px">Detecting…</div><p class="note" id="ispSub"></p></div>
-  <div style="min-width:0;max-width:100%"><small class="note">IP ADDRESS</small><div class="big" id="ispIp" style="overflow-wrap:anywhere">–</div><p class="note" id="ispIp6" style="overflow-wrap:anywhere;max-width:220px"></p></div>
-  <div><small class="note">LOCATION</small><div class="big" id="ispLoc">–</div></div>
-  <div><small class="note">NETWORK (ASN)</small><div class="big" id="ispAsn">–</div></div>
-  <div><small class="note">TEST SERVER</small><div class="big" id="ispSrv">–</div><p class="note" id="ispSrvSub"></p></div>
-  <p class="note" id="ispSrvNote" style="font-size:12px" hidden></p>
+<section class="card" id="isp">
+  <div><span class="label">Your internet provider</span><div class="big" id="ispName">Detecting…</div><p class="note" id="ispSub"></p></div>
+  <div><span class="label">IP address</span><div class="big wrap-any" id="ispIp">-</div><p class="note" id="ispIp6"></p></div>
+  <div><span class="label">Location</span><div class="big" id="ispLoc">-</div></div>
+  <div><span class="label">Network (ASN)</span><div class="big" id="ispAsn">-</div></div>
+  <div><span class="label">Test server</span><div class="big" id="ispSrv">-</div><p class="note" id="ispSrvSub"></p></div>
+  <p class="note" id="ispSrvNote" hidden></p>
 </section>
 
 <h2>What you can actually do</h2>
@@ -208,85 +225,85 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
 
 <h2>Speed stability</h2>
 <div class="grid">
-  <div class="card"><div class="big" id="realTitle">–</div><p class="note" id="realTxt">We compare your peak speed with what you can sustain, and check whether things slow down when the line is busy.</p>
-    <div style="margin-top:12px">
-      <div class="row"><span><span class="hint" title="Best speed reached in the test — closest to what your plan advertises">Peak speed</span></span><span id="peak">–</span></div>
-      <div class="row"><span><span class="hint" title="Median speed over the test — what you get day to day">Sustained speed</span></span><span id="sust">–</span></div>
-      <div class="row"><span><span class="hint" title="How steady the speed was. 100% = perfectly flat">Stability</span></span><span id="stab">–</span></div>
-      <div class="row"><span><span class="hint" title="Speed with one connection vs four at once. Four is usually faster; if one is faster, your ISP or the route is limiting parallel connections.">1 stream vs 4 streams</span></span><span id="multi">–</span></div>
-      <p class="note" id="multiNote" style="margin-top:6px;text-align:left"></p>
+  <div class="card"><span class="label">Speed consistency</span><div class="big" id="realTitle"><span class="tag na">Runs with the test</span></div><p class="note mt-2" id="realTxt">We compare your peak speed with what you can sustain, and check whether things slow down when the line is busy.</p>
+    <div class="mt-3">
+      <div class="row"><span><span class="hint" title="Best speed reached in the test, closest to what your plan advertises">Peak speed</span></span><span id="peak">-</span></div>
+      <div class="row"><span><span class="hint" title="Median speed over the test, what you get day to day">Sustained speed</span></span><span id="sust">-</span></div>
+      <div class="row"><span><span class="hint" title="How steady the speed was. 100% = perfectly flat">Stability</span></span><span id="stab">-</span></div>
+      <div class="row"><span><span class="hint" title="Speed with one connection vs four at once. Four is usually faster; if one is faster, your ISP or the route is limiting parallel connections.">1 stream vs 4 streams</span></span><span id="multi">-</span></div>
+      <p class="note mt-2 left" id="multiNote"></p>
     </div></div>
-  <div class="card"><div class="big" id="bbTitle">–</div><p class="note">Bufferbloat: does your connection lag when someone is downloading or uploading? Ping to a second server is measured while the line is idle, then while it's full.</p>
-    <div style="margin-top:12px">
-      <div class="row"><span>Idle ping (second server)</span><span id="pIdle">–</span></div>
-      <div class="row"><span>Ping during download</span><span id="pDl">–</span></div>
-      <div class="row"><span>Ping during upload</span><span id="pUl">–</span></div>
+  <div class="card"><span class="label">Bufferbloat</span><div class="big" id="bbTitle"><span class="tag na">Runs with the test</span></div><p class="note mt-2">Does your connection lag when someone is downloading or uploading? Ping to a second server is measured while the line is idle, then while it's full.</p>
+    <div class="mt-3">
+      <div class="row"><span>Idle ping (second server)</span><span id="pIdle">-</span></div>
+      <div class="row"><span>Ping during download</span><span id="pDl">-</span></div>
+      <div class="row"><span>Ping during upload</span><span id="pUl">-</span></div>
     </div></div>
 </div>
 
-<h2>Your IP — real, shared or hidden?</h2>
+<h2>Your IP: real, shared or hidden?</h2>
 <div class="grid">
-  <div class="card"><div class="big" id="ipTitle">–</div><p class="note" id="ipTxt">Runs with the test.</p>
-    <div style="margin-top:12px" id="ipRows"></div></div>
-  <div class="card"><div class="big">Checks</div><div style="margin-top:8px" id="ipChecks"><p class="note">Runs with the test.</p></div></div>
+  <div class="card"><span class="label">Your IP</span><div class="big" id="ipTitle"><span class="tag na">Runs with the test</span></div><p class="note mt-2" id="ipTxt">Checks whether your address looks like your own, shared with other customers, or hidden behind a VPN.</p>
+    <div class="mt-3" id="ipRows"></div></div>
+  <div class="card"><span class="label">Checks</span><div class="mt-2" id="ipChecks"><p class="note">Runs with the test.</p></div></div>
 </div>
 
 <h2>Disk speed (this device)</h2>
 <div class="grid">
-  <div class="card"><small class="note">READ</small><div class="big" id="rd" style="font-size:28px">–</div><p class="note">Reading back the test file. Your system usually serves this from memory, so it can read higher than your drive really is.</p></div>
-  <div class="card"><small class="note">WRITE</small><div class="big" id="wr" style="font-size:28px">–</div><p class="note" id="diskNote">Saving data to your storage. Measured through the browser, so real-world results can be higher.</p></div>
+  <div class="card"><span class="label">Read</span><div class="big big-xl" id="rd">-</div><p class="note">Reading back the test file. Your system usually serves this from memory, so it can read higher than your drive really is.</p></div>
+  <div class="card"><span class="label">Write</span><div class="big big-xl" id="wr">-</div><p class="note" id="diskNote">Saving data to your storage. Measured through the browser, so real-world results can be higher.</p></div>
 </div>
 
 <h2>Speed in plain English</h2>
-<div class="card"><table>
+<div class="card"><table class="conv">
   <thead><tr><th>Your speed</th><th>Value</th><th>Meaning</th></tr></thead>
   <tbody id="conv"><tr><td colspan="3" class="note">Run the test to see conversions.</td></tr></tbody></table>
-  <p class="note" style="margin-top:12px">Internet plans use <b>bits</b>; files and downloads use <b>bytes</b>. 1 byte = 8 bits, so <b>100 Mbps ≈ 12.5 MB/s</b>.</p>
+  <p class="note mt-3">Internet plans use <b>bits</b>; files and downloads use <b>bytes</b>. 1 byte = 8 bits, so <b>100 Mbps ≈ 12.5 MB/s</b>.</p>
 </div>
 
 <h2>Why Fast.com and Speedtest (Ookla) show different speeds</h2>
 <div class="card">
-  <p class="note" style="margin-bottom:12px">Neither is wrong. They measure <b>different paths</b> with <b>different methods</b>, so the numbers differ. Pulse is shown last so you can see where it fits.</p>
-  <div style="overflow-x:auto"><table class="cmp">
+  <p class="note">Neither is wrong. They measure <b>different paths</b> with <b>different methods</b>, so the numbers differ. Pulse is shown last so you can see where it fits.</p>
+  <div class="mt-3" style="overflow-x:auto"><table class="cmp">
     <thead><tr><th></th><th>Fast.com (Netflix)</th><th>Speedtest (Ookla)</th><th>Pulse (this site)</th></tr></thead>
     <tbody>
     <tr><td><b>What it answers</b></td><td>“How fast is Netflix-style streaming for me?”</td><td>“What is the max my line can do?”</td><td>Speed to <i>this</i> server + full health check</td></tr>
-    <tr><td><b>Test server</b></td><td>Netflix Open Connect boxes, often inside your ISP’s network</td><td>Nearby server you (or it) pick — often run by an ISP</td><td>The Cloudflare server your ISP reaches (Mumbai for most Bangladeshi ISPs)</td></tr>
+    <tr><td><b>Test server</b></td><td>Netflix Open Connect boxes, often inside your ISP’s network</td><td>Nearby server you (or it) pick, often run by an ISP</td><td>The Cloudflare server your ISP reaches (Mumbai for most Bangladeshi ISPs)</td></tr>
     <tr><td><b>Connections</b></td><td>Fewer parallel connections, plain HTTPS downloads</td><td>Many parallel connections, tuned to fill your line</td><td>4 parallel down, 4 up</td></tr>
     <tr><td><b>Averaging</b></td><td>Averages the whole test, stricter</td><td>Drops the slowest &amp; fastest slices, favours peak</td><td>Download: median after warm-up, peak shown. Upload: average after warm-up</td></tr>
     <tr><td><b>Typical result</b></td><td>Lower, closer to real streaming</td><td>Higher, closer to advertised “up to” speed</td><td>Depends on server distance</td></tr>
     </tbody></table></div>
-  <div class="grid" style="margin-top:14px">
-    <div class="card2" style="background:var(--card2);border-radius:14px;padding:14px"><b>Fast.com is lower when…</b><p class="note">Your ISP is congested toward Netflix, the Netflix box near you is busy, or Wi-Fi is weak. It reflects what streaming really gets.</p></div>
-    <div class="card2" style="background:var(--card2);border-radius:14px;padding:14px"><b>Ookla is higher when…</b><p class="note">A big local server exists (ISPs often host them, so traffic stays on their fast network). It shows line capacity, not everyday experience.</p></div>
-    <div class="card2" style="background:var(--card2);border-radius:14px;padding:14px"><b>Which should you trust?</b><p class="note">Use <b>Ookla</b> to check you get the plan you pay for. Use <b>Fast.com</b> to know how streaming will feel. A big gap between them can hint at ISP throttling of video.</p></div>
+  <div class="grid mt-4">
+    <div class="sub"><b>Fast.com is lower when…</b><p class="note mt-1">Your ISP is congested toward Netflix, the Netflix box near you is busy, or Wi-Fi is weak. It reflects what streaming really gets.</p></div>
+    <div class="sub"><b>Ookla is higher when…</b><p class="note mt-1">A big local server exists (ISPs often host them, so traffic stays on their fast network). It shows line capacity, not everyday experience.</p></div>
+    <div class="sub"><b>Which should you trust?</b><p class="note mt-1">Use <b>Ookla</b> to check you get the plan you pay for. Use <b>Fast.com</b> to know how streaming will feel. A big gap between them can hint at ISP throttling of video.</p></div>
   </div>
-  <p class="note" id="compareMine" style="margin-top:12px"></p>
+  <p class="note mt-3" id="compareMine"></p>
 </div>
 
-<h2>Glossary — the confusing bits</h2>
+<h2>Glossary: the confusing bits</h2>
 <details><summary>Megabit (Mb) vs Megabyte (MB)</summary><p>A <b>bit</b> is the smallest unit of data. A <b>byte</b> is 8 bits. Internet providers advertise speed in <b>megabits per second (Mbps)</b> because the number looks bigger. Your browser and download managers show <b>megabytes per second (MB/s)</b>. Small b = bit, capital B = byte.</p></details>
-<details><summary>Mega, Giga — how big?</summary><p>1 Gigabit = 1,000 Megabits. 1 Gigabyte = 1,000 Megabytes = 8,000 Megabits. So a <b>1 Gbps</b> line downloads at most <b>125 MB/s</b>.</p></details>
+<details><summary>Mega, Giga: how big?</summary><p>1 Gigabit = 1,000 Megabits. 1 Gigabyte = 1,000 Megabytes = 8,000 Megabits. So a <b>1 Gbps</b> line downloads at most <b>125 MB/s</b>.</p></details>
 <details><summary>Download vs upload</summary><p><b>Download</b> = getting data to you (streaming, browsing, game updates). <b>Upload</b> = sending data out (video calls, cloud backups, posting videos). Most home plans have much slower upload.</p></details>
-<details><summary>Ping / latency</summary><p>How long a tiny message takes to reach a server and come back, in milliseconds (ms). Lower is better. Under 30 ms is excellent, under 50 ms is great for gaming, 50–100 ms is playable, over 150 ms feels laggy.</p></details>
+<details><summary>Ping / latency</summary><p>How long a tiny message takes to reach a server and come back, in milliseconds (ms). Lower is better. Under 30 ms is excellent, under 50 ms is great for gaming, 50 to 100 ms is playable, over 150 ms feels laggy.</p></details>
 <details><summary>Jitter</summary><p>How much your ping bounces around. Low jitter = smooth calls and games. High jitter = choppy voice, rubber-banding in games.</p></details>
 <details><summary>Packet loss and dropped pings</summary><p>Data travels in small packets. If some never arrive they must be re-sent, causing stutter. Anything above 1% is worth fixing; above 2.5% hurts calls and games a lot. Weak Wi-Fi is the usual cause. A browser can't count lost packets directly (they are re-sent behind the scenes), so Pulse shows <b>dropped pings</b>: pings with no reply within 2 seconds. That catches dropouts and heavy loss, but light loss only shows up as higher ping and jitter.</p></details>
 <details><summary>Bufferbloat</summary><p>When your connection is busy, ping can shoot up because packets queue behind each other. Ping during download or upload much higher than idle ping means one person's download makes everyone else lag.</p></details>
-<details><summary>Real, shared and CGNAT IPs</summary><p>Your <b>public IP</b> is your address on the internet. Many providers put several customers behind the same public address (<b>CGNAT</b>) — that's a <b>shared IP</b>: fine for browsing, but a problem for hosting servers, port forwarding and some games. A website can only spot it sometimes (for example when two servers see two different addresses from you). The sure check: open your router's admin page and compare its <b>WAN IP</b> with the IP shown here. If they differ, or the WAN IP starts with 100.64–100.127, 10. or 192.168., your IP is shared. A <b>VPN or proxy</b> replaces your real IP with the VPN server's one.</p></details>
-<details><summary>Why is my speed lower than my plan?</summary><p>Wi-Fi (walls, distance, 2.4 GHz), many devices at once, an old router, or ISP congestion at busy hours. Try again over an Ethernet cable and compare — that shows your <b>real line speed</b> without Wi-Fi in the way.</p></details>
+<details><summary>Real, shared and CGNAT IPs</summary><p>Your <b>public IP</b> is your address on the internet. Many providers put several customers behind the same public address (<b>CGNAT</b>). That is a <b>shared IP</b>: fine for browsing, but a problem for hosting servers, port forwarding and some games. A website can only spot it sometimes (for example when two servers see two different addresses from you). The sure check: open your router's admin page and compare its <b>WAN IP</b> with the IP shown here. If they differ, or the WAN IP starts with 100.64 to 100.127, 10. or 192.168., your IP is shared. A <b>VPN or proxy</b> replaces your real IP with the VPN server's one.</p></details>
+<details><summary>Why is my speed lower than my plan?</summary><p>Wi-Fi (walls, distance, 2.4 GHz), many devices at once, an old router, or ISP congestion at busy hours. Try again over an Ethernet cable and compare. That shows your <b>real line speed</b> without Wi-Fi in the way.</p></details>
 
 <h2>Your recent tests</h2>
 <div class="card"><table><thead><tr><th>When</th><th>Download</th><th>Upload</th><th>Ping</th></tr></thead><tbody id="hist"><tr><td colspan="4" class="note">Your last tests on this device will show here.</td></tr></tbody></table>
-  <p class="note" style="margin-top:10px">Saved only in this browser.</p></div>
+  <p class="note mt-3">Saved only in this browser.</p></div>
 
-<footer>Pulse measures between your browser and the nearest Cloudflare server your ISP reaches. Results change with Wi-Fi, time of day and your ISP's routing — test a few times, ideally over a cable.</footer>
+<footer>Pulse measures between your browser and the nearest Cloudflare server your ISP reaches. Results change with Wi-Fi, time of day and your ISP's routing, so test a few times, ideally over a cable.</footer>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
 let unit = 'mbps', results = null;
 const fmtSpeed = mbps => {
-  if (mbps == null) return ['–',''];
+  if (mbps == null) return ['-',''];
   if (unit === 'MBps') { const v = mbps/8; return [v>=100?v.toFixed(0):v.toFixed(1),'MB/s']; }
   if (unit === 'gbps') return [(mbps/1000).toFixed(mbps>=100?2:3),'Gbps'];
   return [mbps>=100?mbps.toFixed(0):mbps.toFixed(1),'Mbps'];
@@ -395,7 +412,7 @@ async function downloadTest(streams, seconds, warm, onTick){
 
 // ---------- upload ----------
 let UPFAIL=0,UPERR=0,DLFAIL=0;
-// POSTs (1MB then 2MB — bigger bodies can exceed the free Worker CPU limit and fail with 503/1102) measured via upload progress.
+// POSTs (1MB then 2MB; bigger bodies can exceed the free Worker CPU limit and fail with 503/1102) measured via upload progress.
 // A failed request still moved its bytes over the network, so what the browser reported sent is kept, and it is retried quickly. Final figure = bytes moved between
 // warm-up end and test end, so the initial socket-buffer burst doesn't inflate it. Returns live samples; .final holds the result.
 function uploadTest(streams, seconds, warm, onTick){
@@ -437,7 +454,7 @@ async function diskTest(){
 }
 
 // ---------- IP ----------
-// Specific VPN / datacenter names only — broad words like "cloud", "server" or "google" matched real home ISPs (e.g. Google Fiber).
+// Specific VPN / datacenter names only. Broad words like "cloud", "server" or "google" matched real home ISPs (e.g. Google Fiber).
 const HOSTING=/\bvpn\b|hosting|datacenter|data cent(er|re)|amazon|\baws\b|google llc|google cloud|microsoft|azure|digitalocean|\bovh\b|hetzner|linode|akamai|vultr|\bm247\b|mullvad|nordvpn|packethub|proton ?ag|surfshark|expressvpn|choopa|leaseweb|cloudflare|oracle cloud|alibaba|tencent cloud|contabo|tor exit|\bproxy\b/i;
 function ipKind(ip){
   if(!ip) return 'unknown';
@@ -446,18 +463,22 @@ function ipKind(ip){
   if(a===127) return 'loopback'; if(a===10||(a===172&&b>=16&&b<=31)||(a===192&&b===168)||(a===169&&b===254)) return 'private';
   if(a===100&&b>=64&&b<=127) return 'cgnat'; return 'public';
 }
-let PUB=null;
-async function getJ(u){ try{ return await (await fetch(u,{cache:'no-store'})).json(); }catch{ return null; } }
-// Dual-stack browsers reach ipwho.is over IPv6, so ask IPv4-only / IPv6-only endpoints first and look up the IPv4.
-async function loadPub(){ if(PUB) return PUB;
-  const [v4,v6]=await Promise.all([getJ('https://api4.ipify.org?format=json'),getJ('https://api6.ipify.org?format=json')]);
+let PUB=null, PUBP=null;
+async function getJ(u,ms=4000){ const ac=new AbortController(), t=setTimeout(()=>ac.abort(),ms);
+  try{ return await (await fetch(u,{cache:'no-store',signal:ac.signal})).json(); }catch{ return null; } finally{ clearTimeout(t); } }
+// All lookups run in parallel so the ISP card fills in quickly. ipwho.is gives ISP and location; the IPv4-only
+// endpoint gives the address shown (dual-stack browsers reach ipwho.is over IPv6). The IPv6-only endpoint can't
+// answer on IPv4-only networks, so it gets a short timeout.
+function loadPub(){ return PUBP||(PUBP=(async()=>{
+  const [v4,v6,who]=await Promise.all([getJ('https://api4.ipify.org?format=json'),getJ('https://api6.ipify.org?format=json',1500),getJ('https://ipwho.is/')]);
   const ip4=v4?.ip&&!v4.ip.includes(':')?v4.ip:null, ip6=v6?.ip?.includes(':')?v6.ip:null;
-  const j=await getJ('https://ipwho.is/'+(ip4||ip6||''));
-  if(j?.success){ PUB=j; PUB.ip4=ip4; PUB.ip6=ip6||(j.ip.includes(':')?j.ip:null); }
-  else { // ipwho.is down, rate-limited or blocked: fall back to what Cloudflare knows (no ISP name or timezone)
+  let j=who?.success?who:null;
+  if(!j){ // ipwho.is down, rate-limited or blocked: fall back to what Cloudflare knows (no ISP name or timezone)
     const w=await getJ(EDGE_BASE+'/ip');
-    if(w?.ip){ const ip=ip4||w.ip; PUB={ip,ip4,ip6:ip6||(w.ip.includes(':')?w.ip:null),type:ip.includes(':')?'IPv6':'IPv4',city:w.city,country:w.country,country_code:w.country,connection:{asn:w.asn},partial:true}; } }
-  return PUB; }
+    if(w?.ip) j={ip:w.ip,city:w.city,country:w.country,country_code:w.country,connection:{asn:w.asn},partial:true}; }
+  if(!j) return null;
+  const seenIp=j.ip; j.ip=ip4||seenIp; j.ip4=ip4; j.ip6=ip6||(seenIp?.includes(':')?seenIp:null); j.type=j.ip.includes(':')?'IPv6':'IPv4';
+  return PUB=j; })()); }
 async function ipTest(){
   const out={checks:[],rows:[],title:'Unknown',cls:'na',txt:''};
   let srv={}, pub=null;
@@ -467,23 +488,23 @@ async function ipTest(){
   const add=(t,ok,cls)=>out.checks.push(`<div class="row"><span>${t}</span><span>${tag(ok,cls)}</span></div>`);
   out.rows.push(['Your public IP',seen||'unknown']);
   if(pub?.ip6&&pub.ip6!==seen) out.rows.push(['IPv6',pub.ip6]);
-  if(pub){ out.rows.push(['Type',pub.ip4&&pub.ip6?'IPv4 + IPv6':pub.type||'–']); out.rows.push(['ISP',pub.connection?.isp||pub.connection?.org||'–']); out.rows.push(['Location',[pub.city,pub.country].filter(Boolean).join(', ')||'–']); out.rows.push(['Timezone',pub.timezone?.id||'–']); }
+  if(pub){ out.rows.push(['Type',pub.ip4&&pub.ip6?'IPv4 + IPv6':pub.type||'-']); out.rows.push(['ISP',pub.connection?.isp||pub.connection?.org||'-']); out.rows.push(['Location',[pub.city,pub.country].filter(Boolean).join(', ')||'-']); out.rows.push(['Timezone',pub.timezone?.id||'-']); }
   if(srv.ip && srv.ip!==seen) out.rows.push(['Server sees',srv.ip]);
 
   // CGNAT from a public pool never shows 100.64.x.x to the outside; the tell is two different
-  // public IPs (same family) seen seconds apart by two servers — the ISP's NAT picked different pool addresses.
+  // public IPs (same family) seen seconds apart by two servers: the ISP's NAT picked different pool addresses.
   const fam=ip=>ip.includes(':')?6:4;
   const pool=!!(pub?.ip&&srv.ip&&pub.ip!==srv.ip&&fam(pub.ip)===fam(srv.ip)&&kind==='public'&&srvKind==='public');
   const cg=kind==='cgnat'||srvKind==='cgnat'||pool;
   add('Public address', kind==='public'?'Yes':kind==='unknown'?'Unknown':'No ('+kind+')', kind==='public'?'ok':'warn');
-  add('Same IP seen by two servers', !(pub?.ip&&srv.ip)?'Unknown':pool?'No — '+pub.ip+' vs '+srv.ip:'Yes', pool?'warn':'ok');
-  add('Shared IP (CGNAT)', cg?'Yes — shared':'Not detected', cg?'warn':'ok');
+  add('Same IP seen by two servers', !(pub?.ip&&srv.ip)?'Unknown':pool?'No: '+pub.ip+' vs '+srv.ip:'Yes', pool?'warn':'ok');
+  add('Shared IP (CGNAT)', cg?'Yes, shared':'Not detected', cg?'warn':'ok');
   let vpn=false;
   if(pub&&!pub.partial){ const s=(pub.connection?.isp||'')+' '+(pub.connection?.org||''); const host=HOSTING.test(s); const tzMis=pub.timezone?.id&&pub.timezone.id!==Intl.DateTimeFormat().resolvedOptions().timeZone;
     add('Datacenter / VPN network', host?'Looks like it':'Not detected', host?'bad':'ok');
     add('Timezone matches browser', tzMis?'Mismatch':'Match', tzMis?'warn':'ok'); vpn=host; }
   else add('ISP / VPN lookup', 'Unavailable right now','na');
-  if(kind==='public'&&!cg&&!vpn){out.title='Public IP — no sharing detected';out.cls='ok';out.txt='Nothing here suggests a shared IP, VPN or proxy. A website can\'t see inside your router, though, so this can\'t prove the IP is yours alone. To be sure, compare it with the WAN IP on your router\'s admin page — if they match, it is.';}
+  if(kind==='public'&&!cg&&!vpn){out.title='Public IP, no sharing detected';out.cls='ok';out.txt='Nothing here suggests a shared IP, VPN or proxy. A website can\'t see inside your router, though, so this can\'t prove the IP is yours alone. To be sure, compare it with the WAN IP on your router\'s admin page. If they match, it is.';}
   else if(pool){out.title='Likely shared IP (ISP NAT)';out.cls='warn';out.txt='Two servers saw two different public addresses from you within seconds. That happens when your ISP puts many customers behind a shared pool of addresses (CGNAT). Hosting or port-forwarding will not work without asking them for a real IP.';}
   else if(cg){out.title='Shared IP (CGNAT)';out.cls='warn';out.txt='Your ISP shares this address between many customers. Hosting or port-forwarding will not work without asking them.';}
   else if(vpn){out.title='Likely VPN / proxy';out.cls='warn';out.txt='This address looks like a VPN, proxy or datacenter, not your real home connection.';}
@@ -497,18 +518,21 @@ function grade(ok,mid){return ok?['Great','ok']:mid?['OK','warn']:['Struggles','
 // One bufferbloat scale used by both the Bufferbloat card and the "Many devices" card.
 function bbGrade(r){ const inc=Math.max(r.dlPing,r.ulPing)-r.bbIdle;
   return inc<30?{inc,g:'A',txt:'A (no bufferbloat)',cls:'ok'}:inc<100?{inc,g:'B',txt:'B (some lag under load)',cls:'warn'}:{inc,g:'C',txt:'C (lag spikes under load)',cls:'bad'}; }
+// Phosphor Icons (regular, MIT), inlined as SVG so they inherit the text colour.
+const ICON_PATHS={"film": "M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,88h80v80H40Zm96-16V56h32V72Zm-16,0H88V56h32Zm0,112v16H88V184Zm16,0h32v16H136Zm0-16V88h80v80Zm80-96H184V56h32ZM72,56V72H40V56ZM40,184H72v16H40Zm176,16H184V184h32v16Z", "game": "M176,112H152a8,8,0,0,1,0-16h24a8,8,0,0,1,0,16ZM104,96H96V88a8,8,0,0,0-16,0v8H72a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0v-8h8a8,8,0,0,0,0-16ZM241.48,200.65a36,36,0,0,1-54.94,4.81c-.12-.12-.24-.24-.35-.37L146.48,160h-37L69.81,205.09l-.35.37A36.08,36.08,0,0,1,44,216,36,36,0,0,1,8.56,173.75a.68.68,0,0,1,0-.14L24.93,89.52A59.88,59.88,0,0,1,83.89,40H172a60.08,60.08,0,0,1,59,49.25c0,.06,0,.12,0,.18l16.37,84.17a.68.68,0,0,1,0,.14A35.74,35.74,0,0,1,241.48,200.65ZM172,144a44,44,0,0,0,0-88H83.89A43.9,43.9,0,0,0,40.68,92.37l0,.13L24.3,176.59A20,20,0,0,0,58,194.3l41.92-47.59a8,8,0,0,1,6-2.71Zm59.7,32.59-8.74-45A60,60,0,0,1,172,160h-4.2L198,194.31a20.09,20.09,0,0,0,17.46,5.39,20,20,0,0,0,16.23-23.11Z", "cam": "M251.77,73a8,8,0,0,0-8.21.39L208,97.05V72a16,16,0,0,0-16-16H32A16,16,0,0,0,16,72V184a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V159l35.56,23.71A8,8,0,0,0,248,184a8,8,0,0,0,8-8V80A8,8,0,0,0,251.77,73ZM192,184H32V72H192V184Zm48-22.95-32-21.33V116.28L240,95Z", "dev": "M224,72H208V64a24,24,0,0,0-24-24H40A24,24,0,0,0,16,64v96a24,24,0,0,0,24,24H152v8a24,24,0,0,0,24,24h48a24,24,0,0,0,24-24V96A24,24,0,0,0,224,72ZM40,168a8,8,0,0,1-8-8V64a8,8,0,0,1,8-8H184a8,8,0,0,1,8,8v8H176a24,24,0,0,0-24,24v72Zm192,24a8,8,0,0,1-8,8H176a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Zm-96,16a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h40A8,8,0,0,1,136,208Zm80-96a8,8,0,0,1-8,8H192a8,8,0,0,1,0-16h16A8,8,0,0,1,216,112Z"};
+const icon=k=>`<svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="${ICON_PATHS[k]}"/></svg>`;
 function renderUses(r){
   const dl=r.dl, ul=r.ul, p=r.ping, lo=r.loss, jt=r.jitter;
-  const cards=[], head=(icon,n,t,c)=>`<div style="display:flex;justify-content:space-between;gap:8px"><b>${icon} ${n}</b>${tag(t,c)}</div>`;
+  const cards=[], card=(cls,ic,n,t,c,body)=>`<div class="card use ${cls}"><div class="use-head">${icon(ic)}<span>${n}</span></div>${tag(t,c)}<p class="note mt-2">${body}</p></div>`;
   SPEEDS.forEach(([n,need])=>{ const cnt=Math.floor(dl/need); const [t,c]=grade(cnt>=1,dl>need*.7);
-    const msg=cnt>=1?`You can stream about <b>${cnt}</b> at once.`:dl>need*.7?'Borderline — may drop quality or buffer at times.':'Will buffer.';
-    cards.push(`<div class="card v">${head('🎬',n,t,c)}<p class="note" style="margin-top:6px">Needs ~${need} Mbps. ${msg}</p></div>`); });
+    const msg=cnt>=1?`You can stream about <b>${cnt}</b> at once.`:dl>need*.7?'Borderline, may drop quality or buffer at times.':'Will buffer.';
+    cards.push(card('v','film',n,t,c,`Needs ~${need} Mbps. ${msg}`)); });
   const gOk=p<50&&lo<1&&jt<15, gMid=p<100&&lo<2.5; const [gt,gc]=grade(gOk,gMid);
-  cards.push(`<div class="card a">${head('🎮','Online gaming',gt,gc)}<p class="note" style="margin-top:6px">Cares about ping (${p.toFixed(0)} ms), jitter and loss more than raw speed. Under 50 ms is great, under 100 ms is playable.</p></div>`);
+  cards.push(card('a','game','Online gaming',gt,gc,`Cares about ping (${p.toFixed(0)} ms), jitter and loss more than raw speed. Under 50 ms is great, under 100 ms is playable.`));
   const cOk=ul>=3&&dl>=3&&lo<1&&jt<30; const [ct,cc]=grade(cOk,ul>=1.5&&lo<3);
-  cards.push(`<div class="card a">${head('📹','Video calls',ct,cc)}<p class="note" style="margin-top:6px">HD calls need ~3 Mbps up and down. Your upload: ${fmtSpeed(ul).join(' ')}.</p></div>`);
+  cards.push(card('a','cam','Video calls',ct,cc,`HD calls need ~3 Mbps up and down. Your upload: ${fmtSpeed(ul).join(' ')}.`));
   const b=bbGrade(r), [bt,bc]=b.g==='A'?['Great','ok']:b.g==='B'?['OK','warn']:['Struggles','bad'];
-  cards.push(`<div class="card a">${head('🏠','Many devices',bt,bc)}<p class="note" style="margin-top:6px">${b.g==='A'?'Stays responsive when the line is busy.':b.g==='B'?'Gets a little laggy when someone downloads or uploads.':'Gets laggy when someone downloads or uploads.'}</p></div>`);
+  cards.push(card('a','dev','Many devices',bt,bc,b.g==='A'?'Stays responsive when the line is busy.':b.g==='B'?'Gets a little laggy when someone downloads or uploads.':'Gets laggy when someone downloads or uploads.'));
   $('uses').innerHTML=cards.join('');
 }
 function renderConv(dl,ul){
@@ -538,7 +562,7 @@ async function run(){
   await pickServer();
   let wl=null; try{ wl=await navigator.wakeLock?.request('screen'); }catch{}
   const btn=$('go'); btn.disabled=true; btn.textContent='Testing…'; $('copy').hidden=true; chartData.dl=[];chartData.ul=[]; drawChart();
-  ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='–'); $('ulSub').textContent='Sending data to the internet'; $('dlSub').textContent='Getting data from the internet'; results={};
+  ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='-'); $('ulSub').textContent='Sending data to the internet'; $('dlSub').textContent='Getting data from the internet'; results={};
   try{
     $('status').textContent='Measuring latency…'; gauge(0,'','Ping');
     DLFAIL=0; const idle=await pingSeries(20,40); const idleMed=median(idle.arr)||0; const jit=jitterOf(idle.arr); const loss=idle.lost/idle.total*100;
@@ -553,13 +577,13 @@ async function run(){
     const dls=await downloadTest(4,8,2,(m,steady)=>{gauge(m,'','Download'); if(steady){chartData.dl.push(m);drawChart();}});
     const lp=stopDl(); const dlPing=median(lp.arr)||bbBase;
     const dl=median(dls)||0, peak=[...dls].sort((a,b)=>b-a)[Math.floor(dls.length*0.05)]||dl;
-    setSpeed('dl',dl); $('pDl').textContent=dlPing.toFixed(0)+' ms'; $('dlSub').textContent=DLFAIL>2?'Server cut off '+DLFAIL+' downloads — may read a bit low':'Median after warm-up';
+    setSpeed('dl',dl); $('pDl').textContent=dlPing.toFixed(0)+' ms'; $('dlSub').textContent=DLFAIL>2?'Server cut off '+DLFAIL+' downloads, may read a bit low':'Median after warm‑up';
 
     UPFAIL=0;UPERR=0; $('status').textContent='Testing upload…'; const stopUl=loadedPinger();
     const uls=await uploadTest(4,8,2,(m,steady)=>{gauge(m,'','Upload'); if(steady){chartData.ul.push(m);drawChart();}});
     const up=stopUl(); const ulPing=median(up.arr)||bbBase; const ul=uls.final||0;
-    if(!(ul>0)) $('ulSub').textContent=UPERR?'Upload blocked by server (HTTP '+UPERR+')':UPFAIL?'Upload connection failed — retry':'No upload data measured';
-    else $('ulSub').textContent=UPFAIL>2?'Server cut off '+UPFAIL+' uploads — may read a bit low':'Average after warm-up';
+    if(!(ul>0)) $('ulSub').textContent=UPERR?'Upload blocked by server (HTTP '+UPERR+')':UPFAIL?'Upload connection failed, retry':'No upload data measured';
+    else $('ulSub').textContent=UPFAIL>2?'Server cut off '+UPFAIL+' uploads, may read a bit low':'Average after warm‑up';
     setSpeed('ul',ul); $('pUl').textContent=ulPing.toFixed(0)+' ms';
 
     results={dl,ul,ping:idleMed,jitter:jit,loss,dlPing,ulPing,bbIdle:bbBase,peak,single};
@@ -570,11 +594,11 @@ async function run(){
     const cv=(()=>{const m=dls.reduce((a,b)=>a+b,0)/(dls.length||1); const sd=Math.sqrt(dls.reduce((s,v)=>s+(v-m)**2,0)/(dls.length||1)); return m?sd/m:1})();
     const stab=Math.max(0,100-cv*100); const ratio=dl/single;
     $('stab').textContent=stab.toFixed(0)+'%';
-    $('multiNote').textContent=ratio<0.9?'One connection was faster than four. Your ISP or the route to the server is limiting parallel connections — apps that download over many connections (games, updates) may get less than a single stream.':'';
+    $('multiNote').textContent=ratio<0.9?'One connection was faster than four. Your ISP or the route to the server is limiting parallel connections. Apps that download over many connections (games, updates) may get less than a single stream.':'';
     const unsteady=stab<70||dl<peak*0.7||loss>2;
-    $('realTitle').innerHTML=unsteady?tag('Unsteady — possibly congested','warn'):tag('Speed stayed steady','ok');
-    $('realTxt').textContent=unsteady?'Your speed swung or dropped well below its peak — typical of Wi-Fi interference, a busy network or a congested line. Retest over a cable at a quiet hour.':'Speed stayed close to its peak with little variation, which is what a healthy, uncongested connection looks like. (One test is only a snapshot.)';
-    const b=bbGrade(results); $('bbTitle').innerHTML=tag('Bufferbloat: '+b.txt,b.cls);
+    $('realTitle').innerHTML=unsteady?tag('Unsteady, possibly congested','warn'):tag('Speed stayed steady','ok');
+    $('realTxt').textContent=unsteady?'Your speed swung or dropped well below its peak, typical of Wi-Fi interference, a busy network or a congested line. Retest over a cable at a quiet hour.':'Speed stayed close to its peak with little variation, which is what a healthy, uncongested connection looks like. (One test is only a snapshot.)';
+    const b=bbGrade(results); $('bbTitle').innerHTML=tag('Grade '+b.txt,b.cls);
 
     $('status').textContent='Checking disk speed…'; const d=await diskTest();
     if(d){ $('rd').textContent=(d.read/8).toFixed(0)+' MB/s'; $('wr').textContent=(d.write/8).toFixed(0)+' MB/s'; }
@@ -584,7 +608,7 @@ async function run(){
     $('status').textContent='Checking your IP…'; const ip=await ipTest(); results.ip=ip;
     $('ipTitle').innerHTML=tag(ip.title,ip.cls); $('ipTxt').textContent=ip.txt;
     $('ipRows').innerHTML=ip.rows.map(([a,b])=>`<div class="row"><span>${esc(a)}</span><span>${String(b).includes(':')&&/^[0-9a-f:]+$/i.test(b)?v6wrap(b):esc(b)}</span></div>`).join(''); $('ipChecks').innerHTML=ip.checks.join('');
-    $('status').textContent='Done ✓ '+new Date().toLocaleTimeString()+($('localWarn').hidden?'':' (local test — not internet speed)'); $('phase').textContent='Complete';
+    $('status').textContent='Done at '+new Date().toLocaleTimeString()+($('localWarn').hidden?'':' (local test, not internet speed)'); $('phase').textContent='Complete';
     try{const h=JSON.parse(localStorage.pulse||'[]'); h.unshift({t:Date.now(),dl,ul,p:idleMed}); localStorage.pulse=JSON.stringify(h.slice(0,10));}catch{}
     renderHistory(); $('copy').hidden=false;
   }catch(e){ $('status').textContent='Test failed: '+e.message; }
@@ -594,11 +618,11 @@ async function run(){
 $('go').onclick=run;
 $('copy').onclick=async()=>{ const r=results; if(!r||r.dl==null) return;
   const f=m=>fmtSpeed(m).join(' ');
-  const txt=`Pulse speed test — ${new Date().toLocaleString()}\nDownload: ${f(r.dl)} (peak ${f(r.peak)})\nUpload: ${f(r.ul)}\nPing: ${r.ping.toFixed(0)} ms · Jitter ${r.jitter.toFixed(1)} ms · Dropped pings ${r.loss.toFixed(1)}%\nBufferbloat: ${bbGrade(r).txt}\nServer: ${$('ispSrv').textContent}\nIP check: ${r.ip?.title||'–'}\n${location.origin}`;
+  const txt=`Pulse speed test, ${new Date().toLocaleString()}\nDownload: ${f(r.dl)} (peak ${f(r.peak)})\nUpload: ${f(r.ul)}\nPing: ${r.ping.toFixed(0)} ms · Jitter ${r.jitter.toFixed(1)} ms · Dropped pings ${r.loss.toFixed(1)}%\nBufferbloat: ${bbGrade(r).txt}\nServer: ${$('ispSrv').textContent}\nIP check: ${r.ip?.title||'-'}\n${location.origin}`;
   let ok=false; try{ await navigator.clipboard.writeText(txt); ok=true; }catch{}
   if(!ok){ const ta=document.createElement('textarea'); ta.value=txt; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;opacity:0;top:0';
     document.body.appendChild(ta); ta.select(); try{ ok=document.execCommand('copy'); }catch{} ta.remove(); }
-  $('copy').textContent=ok?'Copied ✓':'Copy blocked by browser';
+  $('copy').textContent=ok?'Copied':'Copy blocked by browser';
   setTimeout(()=>{$('copy').textContent='Copy results'},2000); };
 $('unitSeg').onclick=e=>{ const u=e.target.dataset.u; if(!u)return; unit=u; [...$('unitSeg').children].forEach(b=>b.classList.toggle('on',b.dataset.u===u));
   gauge(_tgt); drawChart(); renderHistory(); if(!RUNNING) renderSpeeds(); };
@@ -615,9 +639,9 @@ document.querySelectorAll('.hint').forEach(hn=>{ hn.tabIndex=0; hn.setAttribute(
 const h=location.hostname; if(/^(localhost|127\.|\[?::1|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h)){ $('localWarn').hidden=false; $('lwHost').textContent=h; }
 gauge(0); renderHistory(); addEventListener('resize',()=>drawChart());
 (async()=>{ const p=await loadPub(); let srv={}; try{srv=await (await fetch('/api/ip',{cache:'no-store'})).json()}catch{}
-  if(!p){ $('ispName').textContent='Could not detect'; $('ispSub').textContent='IP lookup needs internet access.'; $('ispIp').textContent=srv.ip||'–'; return; }
+  if(!p){ $('ispName').textContent='Could not detect'; $('ispSub').textContent='IP lookup needs internet access.'; $('ispIp').textContent=srv.ip||'-'; return; }
   const c=p.connection||{}; $('ispName').textContent=c.isp||c.org||(p.partial?'Unavailable':'Unknown'); $('ispSub').textContent=(c.org&&c.org!==c.isp?c.org+' · ':'')+(p.ip4&&p.ip6?'IPv4 + IPv6':p.type||'');
-  $('ispIp').textContent=p.ip4||p.ip; $('ispIp6').innerHTML=p.ip4&&p.ip6?'IPv6 '+v6wrap(p.ip6):''; $('ispLoc').textContent=[p.city,p.region,p.country].filter(Boolean).join(', ')||'–'; $('ispAsn').textContent=c.asn?('AS'+c.asn):'–'; srvNote(); })();
+  $('ispIp').textContent=p.ip4||p.ip; $('ispIp6').innerHTML=p.ip4&&p.ip6?'IPv6 '+v6wrap(p.ip6):''; $('ispLoc').textContent=[p.city,p.region,p.country].filter(Boolean).join(', ')||'-'; $('ispAsn').textContent=c.asn?('AS'+c.asn):'-'; srvNote(); })();
 </script>
 </body>
 </html>

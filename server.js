@@ -3,7 +3,7 @@ const http = require('http'), fs = require('fs'), path = require('path'), crypto
 const PORT = process.env.PORT || 3000;
 const CHUNK = crypto.randomBytes(1 << 20); // incompressible 1MB block, reused
 const MAX_DL = 1024 * 1024 * 1024;         // 1 GB cap per request
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml' };
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png' };
 
 const cleanIp = ip => (ip || '').replace(/^::ffff:/, '');
 function clientIp(req) {
