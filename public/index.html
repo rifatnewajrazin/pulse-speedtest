@@ -179,7 +179,7 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
   <div style="min-width:0;max-width:100%"><small class="note">IP ADDRESS</small><div class="big" id="ispIp" style="overflow-wrap:anywhere">–</div><p class="note" id="ispIp6" style="overflow-wrap:anywhere;max-width:220px"></p></div>
   <div><small class="note">LOCATION</small><div class="big" id="ispLoc">–</div></div>
   <div><small class="note">NETWORK (ASN)</small><div class="big" id="ispAsn">–</div></div>
-  <div><small class="note">TEST SERVER</small><div class="big" id="ispSrv">–</div><p class="note" id="ispSrvSub"></p></div>
+  <div><small class="note">TEST SERVER</small><div class="big" id="ispSrv">–</div><p class="note" id="ispSrvSub"></p><p class="note" id="ispSrvNote" style="max-width:240px;font-size:12px;margin-top:6px"></p></div>
 </section>
 
 <h2>What you can actually do</h2>
@@ -229,7 +229,7 @@ body:after{mix-blend-mode:normal;opacity:.06;transform:translateZ(0)}
     <thead><tr><th></th><th>Fast.com (Netflix)</th><th>Speedtest (Ookla)</th><th>Pulse (this site)</th></tr></thead>
     <tbody>
     <tr><td><b>What it answers</b></td><td>“How fast is Netflix-style streaming for me?”</td><td>“What is the max my line can do?”</td><td>Speed to <i>this</i> server + full health check</td></tr>
-    <tr><td><b>Test server</b></td><td>Netflix Open Connect boxes, often inside your ISP’s network</td><td>Nearby server you (or it) pick — often run by an ISP</td><td>The server hosting this page</td></tr>
+    <tr><td><b>Test server</b></td><td>Netflix Open Connect boxes, often inside your ISP’s network</td><td>Nearby server you (or it) pick — often run by an ISP</td><td>The Cloudflare server your ISP reaches (Mumbai for most Bangladeshi ISPs)</td></tr>
     <tr><td><b>Connections</b></td><td>Fewer parallel connections, plain HTTPS downloads</td><td>Many parallel connections, tuned to fill your line</td><td>4 parallel down, 3 up</td></tr>
     <tr><td><b>Averaging</b></td><td>Averages the whole test, stricter</td><td>Drops the slowest &amp; fastest slices, favours peak</td><td>Median of steady samples + peak shown</td></tr>
     <tr><td><b>Typical result</b></td><td>Lower, closer to real streaming</td><td>Higher, closer to advertised “up to” speed</td><td>Depends on server distance</td></tr>
@@ -313,7 +313,11 @@ async function pickServer(){ if(!EDGE_BASE) return; try{ const ac=new AbortContr
 const SERVER={edge:null,fn:null};
 const REGIONS={DAC:'Dhaka, Bangladesh',CGP:'Chittagong, Bangladesh',ZYL:'Sylhet, Bangladesh',CCU:'Kolkata, India',BOM:'Mumbai, India',MAA:'Chennai, India',SIN:'Singapore',HKG:'Hong Kong',DEL:'Delhi, India',KUL:'Kuala Lumpur',bom1:'Mumbai, India',sin1:'Singapore',hkg1:'Hong Kong',iad1:'Washington DC, USA',sfo1:'San Francisco, USA',cdg1:'Paris, France',fra1:'Frankfurt, Germany',lhr1:'London, UK',syd1:'Sydney, Australia',hnd1:'Tokyo, Japan',dxb1:'Dubai, UAE',cle1:'Cleveland, USA',pdx1:'Portland, USA',gru1:'São Paulo, Brazil',icn1:'Seoul, South Korea',kix1:'Osaka, Japan',arn1:'Stockholm, Sweden',dub1:'Dublin, Ireland',cpt1:'Cape Town, South Africa'};
 function noteServer(r){ const id=r.headers.get('x-vercel-id')||''; const p=id.split('::'); const fn=r.headers.get('x-pulse-region')||p[0]||null; SERVER.edge=p[0]||null; SERVER.fn=fn;
-  const el=$('ispSrv'); if(el&&fn){ el.textContent=REGIONS[fn]||fn; const sub=$('ispSrvSub'); if(sub) sub.textContent='Region '+fn+(SERVER.edge&&SERVER.edge!==fn?' · entry '+SERVER.edge:''); } }
+  const el=$('ispSrv'); if(el&&fn){ el.textContent=REGIONS[fn]||fn; const sub=$('ispSrvSub'); if(sub) sub.textContent='Region '+fn+(SERVER.edge&&SERVER.edge!==fn?' · entry '+SERVER.edge:''); } srvNote(); }
+// Cloudflare serves free-plan traffic from most Bangladeshi ISPs out of Mumbai/Singapore, not its Dhaka PoP.
+function srvNote(){ const el=$('ispSrvNote'); if(!el) return; const fn=SERVER.fn;
+  el.textContent=fn&&PUB?.country_code==='BD'&&!/^(DAC|CGP|ZYL)$/.test(fn)
+    ?'Why not Dhaka? Cloudflare routes most Bangladeshi ISPs to '+(REGIONS[fn]||fn).split(',')[0]+' for sites like this one, so ping here is higher than on tests that use a server inside Bangladesh. Speeds are still accurate for everyday browsing.':''; }
 async function pingOnce(timeout=2000){
   const t0=performance.now(), ac=new AbortController(), to=setTimeout(()=>ac.abort(),timeout);
   try{ const r=await fetch(EP('ping')+'?'+Math.random(),{cache:'no-store',signal:ac.signal}); const ms=performance.now()-t0; if(!SERVER.fn) noteServer(r); return ms; }
@@ -532,7 +536,7 @@ gauge(0);
 (async()=>{ const p=await loadPub(); let srv={}; try{srv=await (await fetch('/api/ip',{cache:'no-store'})).json()}catch{}
   if(!p){ $('ispName').textContent='Could not detect'; $('ispSub').textContent='IP lookup needs internet access.'; $('ispIp').textContent=srv.ip||'–'; return; }
   const c=p.connection||{}; $('ispName').textContent=c.isp||c.org||'Unknown'; $('ispSub').textContent=(c.org&&c.org!==c.isp?c.org+' · ':'')+(p.ip4&&p.ip6?'IPv4 + IPv6':p.type||'');
-  $('ispIp').textContent=p.ip4||p.ip; $('ispIp6').textContent=p.ip4&&p.ip6?'IPv6 '+p.ip6:''; $('ispLoc').textContent=[p.city,p.region,p.country].filter(Boolean).join(', ')||'–'; $('ispAsn').textContent=c.asn?('AS'+c.asn):'–'; })();
+  $('ispIp').textContent=p.ip4||p.ip; $('ispIp6').textContent=p.ip4&&p.ip6?'IPv6 '+p.ip6:''; $('ispLoc').textContent=[p.city,p.region,p.country].filter(Boolean).join(', ')||'–'; $('ispAsn').textContent=c.asn?('AS'+c.asn):'–'; srvNote(); })();
 </script>
 </body>
 </html>
