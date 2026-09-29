@@ -121,7 +121,7 @@ h2:before{content:"";display:inline-block;vertical-align:middle;width:8px;height
 .ok{background:#c6e86b22;color:var(--ok);border-color:#c6e86b44}.warn{background:#ffc46b22;color:var(--warn);border-color:#ffc46b44}.bad{background:#ff7a5c22;color:var(--bad);border-color:#ff7a5c44}.na{background:#ffffff14;color:var(--mut)}
 .row{display:flex;justify-content:space-between;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid #ffffff18;font-size:14px;text-align:left}
 .row:last-child,.row:last-of-type{border:0}
-#multiNote:empty,#realTitle:empty,#bbTitle:empty,#ipTitle:empty,#ipRows:empty{display:none}.row span:first-child{color:var(--mut)}.row span:last-child{text-align:right;font-weight:600}
+#verdict:empty,#multiNote:empty,#realTitle:empty,#bbTitle:empty,#ipTitle:empty,#ipRows:empty{display:none}.row span:first-child{color:var(--mut)}.row span:last-child{text-align:right;font-weight:600}
 table{width:100%;border-collapse:collapse;font-size:14px;text-align:left}
 td,th{padding:var(--space-3) var(--space-2);border-bottom:1px solid #ffffff18;text-align:left;vertical-align:top}
 th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.1em}
@@ -140,6 +140,7 @@ details p b{color:var(--txt)}
 footer{margin-top:var(--space-10);color:var(--mut);font-size:12px;line-height:20px}
 
 /* responsive */
+#verdict{text-wrap:balance}
 /* wide screens: gauge and Start on the left, live numbers and chart on the right, so the readings stay in view during a test */
 @media(min-width:901px){
 .hero{grid-template-columns:minmax(300px,340px) 1fr;align-items:center;justify-items:stretch;gap:var(--space-8)}
@@ -206,6 +207,7 @@ h2{font-size:14px;line-height:20px}
       <div class="gval"><em id="phase">Ready</em><b id="big">0</b><span id="bigUnit">Mbps</span></div>
     </div>
     <button class="go" id="go">Start test</button>
+    <p class="note mt-2" id="verdict" role="status"></p>
     <p class="note mt-2" id="status" role="status" aria-live="polite">Takes about 30 seconds and uses real data, 100 MB or more on a fast line. Avoid it on a limited mobile plan.</p>
     <div class="actions"><button class="ghost" id="copy" hidden>Copy results</button></div>
   </div>
@@ -546,6 +548,13 @@ function renderUses(r){
   cards.push(card('a','dev','Many devices',bt,bc,b.g==='A'?'Stays responsive when the line is busy.':b.g==='B'?'Gets a little laggy when someone downloads or uploads.':'Gets laggy when someone downloads or uploads.'));
   $('uses').innerHTML=cards.join('');
 }
+// One plain sentence for the moment the test ends, using the same limits as the video and gaming cards.
+function renderVerdict(r){
+  const v=r.dl>=25?'Good for 4K video.':r.dl>=8?'Good for HD video.':r.dl>=3?'Only good for SD video.':'Too slow for smooth video.';
+  if(r.dl<3){ $('verdict').textContent=v; return; }
+  const g=(r.ping<50&&r.loss<1&&r.jitter<15)?'will feel smooth':(r.ping<100&&r.loss<2.5)?'is playable':'will feel laggy';
+  $('verdict').textContent=v+' Online gaming '+g+' ('+r.ping.toFixed(0)+' ms ping).';
+}
 function renderConv(dl,ul){
   const row=(n,m)=>`<tr><td>${n}</td><td><b>${m.toFixed(m>=100?0:1)} Mbps</b><br><span class="note">${(m/8).toFixed(1)} MB/s · ${(m/1000).toFixed(3)} Gbps · ${(m/8000).toFixed(4)} GB/s</span></td><td class="note">${n==='Download'?'':''}</td></tr>`;
   const t=(mb)=>{const s=mb*8/dl; return s<60?s.toFixed(0)+' sec':s<3600?(s/60).toFixed(1)+' min':(s/3600).toFixed(1)+' hr'};
@@ -573,6 +582,7 @@ function renderHistory(){
 function endMsPhase(){ PHASE_MS=false; const [v,u]=fmtSpeed(_cur); $('big').textContent=v; $('bigUnit').textContent=u; }
 // Puts the verdict, stability, bufferbloat, IP, conversion and comparison cards back to their pre-test state.
 function resetResultCards(){
+  $('verdict').textContent='';
   $('uses').innerHTML='<div class="card note">Run the test to see this.</div>';
   ['realTitle','bbTitle','ipTitle'].forEach(i=>$(i).innerHTML='');
   $('realTxt').textContent='We compare your peak speed with what you can sustain, and check whether things slow down when the line is busy.';
@@ -627,7 +637,7 @@ async function run(){
 
     results={dl,ul,ping:idleMed,jitter:jit,loss,dlPing,ulPing,bbIdle:bbBase,peak,single};
     $('compareMine').innerHTML='<b>Your result:</b> Pulse measured <b>'+dl.toFixed(0)+' Mbps</b> sustained (peak '+peak.toFixed(0)+'). Expect <b>Ookla</b> to land near the peak or higher, and <b>Fast.com</b> at or a bit below the sustained number. If Fast.com is far below both, your ISP may be slow toward video servers.';
-    gauge(dl,'','Done'); renderSpeeds(); renderConv(dl,ul);
+    gauge(dl,'','Done'); renderSpeeds(); renderConv(dl,ul); renderVerdict(results);
 
     // speed stability
     const cv=(()=>{const m=dls.reduce((a,b)=>a+b,0)/(dls.length||1); const sd=Math.sqrt(dls.reduce((s,v)=>s+(v-m)**2,0)/(dls.length||1)); return m?sd/m:1})();
