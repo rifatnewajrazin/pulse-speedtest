@@ -105,8 +105,8 @@ canvas{width:100%;height:120px;display:block;margin-top:var(--space-4);transform
 .legend i{display:inline-block;width:12px;height:4px;border-radius:2px;vertical-align:middle;margin-right:var(--space-2)}
 
 /* sections */
-h2{font-size:12px;line-height:16px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;margin:var(--space-10) 0 var(--space-4)}
-h2:before{content:"";display:inline-block;vertical-align:middle;width:8px;height:8px;margin:0 var(--space-3) 2px 0;background:var(--a);box-shadow:0 0 12px var(--a)}
+h2{font-size:16px;line-height:24px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;text-wrap:balance;margin:var(--space-10) 0 var(--space-4)}
+h2:before{content:"";display:inline-block;vertical-align:middle;width:8px;height:8px;margin:0 var(--space-3) 4px 0;background:var(--a);box-shadow:0 0 12px var(--a)}
 #isp{margin-top:var(--space-10);display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:var(--space-6)}
 #isp>div{flex:1 1 180px;min-width:0;max-width:100%}
 #ispName{font-size:22px;line-height:28px}
@@ -121,7 +121,7 @@ h2:before{content:"";display:inline-block;vertical-align:middle;width:8px;height
 .ok{background:#c6e86b22;color:var(--ok);border-color:#c6e86b44}.warn{background:#ffc46b22;color:var(--warn);border-color:#ffc46b44}.bad{background:#ff7a5c22;color:var(--bad);border-color:#ff7a5c44}.na{background:#ffffff14;color:var(--mut)}
 .row{display:flex;justify-content:space-between;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid #ffffff18;font-size:14px;text-align:left}
 .row:last-child,.row:last-of-type{border:0}
-#multiNote:empty{display:none}.row span:first-child{color:var(--mut)}.row span:last-child{text-align:right;font-weight:600}
+#multiNote:empty,#realTitle:empty,#bbTitle:empty,#ipTitle:empty,#ipRows:empty{display:none}.row span:first-child{color:var(--mut)}.row span:last-child{text-align:right;font-weight:600}
 table{width:100%;border-collapse:collapse;font-size:14px;text-align:left}
 td,th{padding:var(--space-3) var(--space-2);border-bottom:1px solid #ffffff18;text-align:left;vertical-align:top}
 th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.1em}
@@ -135,7 +135,7 @@ details[open] summary:before{transform:rotate(90deg)}
 details p{color:var(--mut);font-size:14px;padding:0 var(--space-4) var(--space-4)}
 details p b{color:var(--txt)}
 /* dotted help terms: the padding enlarges the tap area to about 44px without moving the layout */
-.hint{position:relative;z-index:1;cursor:help;text-decoration:underline dotted var(--mut);text-decoration-thickness:1px;text-underline-offset:4px;padding:var(--space-4) var(--space-1);margin:0 calc(-1 * var(--space-1))}
+.hint{position:relative;z-index:1;cursor:help;text-decoration:underline dotted var(--mut);text-decoration-thickness:1px;text-underline-offset:4px;padding:var(--space-4) calc(var(--space-1) * 1.5);margin:0 calc(-1.5 * var(--space-1))}
 .tip{position:absolute;z-index:100;max-width:260px;background:#1d140c;border:1px solid var(--line);border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);font-size:13px;line-height:20px;color:var(--txt);box-shadow:0 10px 30px #0008;text-align:left}
 footer{margin-top:var(--space-10);color:var(--mut);font-size:12px;line-height:20px}
 
@@ -143,6 +143,7 @@ footer{margin-top:var(--space-10);color:var(--mut);font-size:12px;line-height:20
 @media(max-width:900px){#uses>.v,#uses>.a{grid-column:span 6}#uses>.a:last-child{grid-column:span 12}}
 @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){
+.seg button{min-height:44px}.seg button:after{display:none} /* real 44px buttons on phones instead of an invisible extension */
 .wrap{padding:var(--space-3) max(var(--space-4),env(safe-area-inset-right)) var(--space-12) max(var(--space-4),env(safe-area-inset-left))}
 header{flex-direction:row;justify-content:space-between}
 .eyebrow{margin-top:var(--space-3)}
@@ -157,6 +158,7 @@ header{flex-direction:row;justify-content:space-between}
 .grid{grid-template-columns:1fr}
 #uses>.v,#uses>.a{grid-column:span 12}
 .row,table{font-size:13px}
+h2{font-size:14px;line-height:20px}
 .cmp,.cmp tbody,.cmp tr,.cmp td{display:block;width:100%}.cmp thead{display:none}
 .cmp tr{border-bottom:1px solid #ffffff18;padding:var(--space-3) 0}.cmp td{border:0;padding:var(--space-1) 0}
 .cmp td[data-label]:before{content:attr(data-label);display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
@@ -176,6 +178,7 @@ header{flex-direction:row;justify-content:space-between}
   <div class="seg" id="unitSeg" role="group" aria-label="Display units"><button data-u="mbps" class="on">Mbps</button><button data-u="MBps">MB/s</button><button data-u="gbps">Gbps</button></div>
 </header>
 
+<main>
 <div class="eyebrow">Internet speed lab</div>
 <h1 class="headline">Internet speed,<br>measured honestly</h1>
 <p class="intro">Download, upload, ping, dropped pings, streaming, disk speed and your IP, all explained in plain English.</p>
@@ -225,7 +228,7 @@ header{flex-direction:row;justify-content:space-between}
 
 <h2>Speed stability</h2>
 <div class="grid">
-  <div class="card"><span class="label">Speed consistency</span><div class="big" id="realTitle"><span class="tag na">Runs with the test</span></div><p class="note mt-2" id="realTxt">We compare your peak speed with what you can sustain, and check whether things slow down when the line is busy.</p>
+  <div class="card"><span class="label">Speed consistency</span><div class="big" id="realTitle"></div><p class="note mt-2" id="realTxt">We compare your peak speed with what you can sustain, and check whether things slow down when the line is busy.</p>
     <div class="mt-3">
       <div class="row"><span><span class="hint" title="Best speed reached in the test, closest to what your plan advertises">Peak speed</span></span><span id="peak">-</span></div>
       <div class="row"><span><span class="hint" title="Median speed over the test, what you get day to day">Sustained speed</span></span><span id="sust">-</span></div>
@@ -233,7 +236,7 @@ header{flex-direction:row;justify-content:space-between}
       <div class="row"><span><span class="hint" title="Speed with one connection vs four at once. Four is usually faster; if one is faster, your ISP or the route is limiting parallel connections.">1 stream vs 4 streams</span></span><span id="multi">-</span></div>
       <p class="note mt-2 left" id="multiNote"></p>
     </div></div>
-  <div class="card"><span class="label">Bufferbloat</span><div class="big" id="bbTitle"><span class="tag na">Runs with the test</span></div><p class="note mt-2">Does your connection lag when someone is downloading or uploading? Ping to a second server is measured while the line is idle, then while it's full.</p>
+  <div class="card"><span class="label">Bufferbloat</span><div class="big" id="bbTitle"></div><p class="note mt-2">Does your connection lag when someone is downloading or uploading? Ping to a second server is measured while the line is idle, then while it's full.</p>
     <div class="mt-3">
       <div class="row"><span>Idle ping (second server)</span><span id="pIdle">-</span></div>
       <div class="row"><span>Ping during download</span><span id="pDl">-</span></div>
@@ -243,9 +246,9 @@ header{flex-direction:row;justify-content:space-between}
 
 <h2>Your IP: real, shared or hidden?</h2>
 <div class="grid">
-  <div class="card"><span class="label">Your IP</span><div class="big" id="ipTitle"><span class="tag na">Runs with the test</span></div><p class="note mt-2" id="ipTxt">Checks whether your address looks like your own, shared with other customers, or hidden behind a VPN.</p>
+  <div class="card"><span class="label">Your IP</span><div class="big" id="ipTitle"></div><p class="note mt-2" id="ipTxt">Checks whether your address looks like your own, shared with other customers, or hidden behind a VPN.</p>
     <div class="mt-3" id="ipRows"></div></div>
-  <div class="card"><span class="label">Checks</span><div class="mt-2" id="ipChecks"><p class="note">Runs with the test.</p></div></div>
+  <div class="card"><span class="label">Checks</span><div class="mt-2" id="ipChecks"><p class="note">Public address, shared IP, VPN and timezone checks appear here after the test.</p></div></div>
 </div>
 
 <h2>Disk speed (this device)</h2>
@@ -295,6 +298,7 @@ header{flex-direction:row;justify-content:space-between}
 <h2>Your recent tests</h2>
 <div class="card"><table><thead><tr><th>When</th><th>Download</th><th>Upload</th><th>Ping</th></tr></thead><tbody id="hist"><tr><td colspan="4" class="note">Your last tests on this device will show here.</td></tr></tbody></table>
   <p class="note mt-3">Saved only in this browser.</p></div>
+</main>
 
 <footer>Pulse measures between your browser and the nearest Cloudflare server your ISP reaches. Results change with Wi-Fi, time of day and your ISP's routing, so test a few times, ideally over a cable.</footer>
 </div>
@@ -487,9 +491,8 @@ async function ipTest(){
   pub=await loadPub();
   const seen=pub?.ip||srv.ip, kind=ipKind(seen), srvKind=ipKind(srv.ip);
   const add=(t,ok,cls)=>out.checks.push(`<div class="row"><span>${t}</span><span>${tag(ok,cls)}</span></div>`);
-  out.rows.push(['Your public IP',seen||'unknown']);
-  if(pub?.ip6&&pub.ip6!==seen) out.rows.push(['IPv6',pub.ip6]);
-  if(pub){ out.rows.push(['Type',pub.ip4&&pub.ip6?'IPv4 + IPv6':pub.type||'-']); out.rows.push(['ISP',pub.connection?.isp||pub.connection?.org||'-']); out.rows.push(['Location',[pub.city,pub.country].filter(Boolean).join(', ')||'-']); out.rows.push(['Timezone',pub.timezone?.id||'-']); }
+  // IP, ISP, location and type already show in the connection details strip, so only the extras are listed here.
+  if(pub?.timezone?.id) out.rows.push(['Timezone',pub.timezone.id]);
   if(srv.ip && srv.ip!==seen) out.rows.push(['Server sees',srv.ip]);
 
   // CGNAT from a public pool never shows 100.64.x.x to the outside; the tell is two different
@@ -550,7 +553,7 @@ function renderSpeeds(){
   const r=results; if(!r||r.dl==null) return;
   setSpeed('dl',r.dl); setSpeed('ul',r.ul);
   $('peak').textContent=fmtSpeed(r.peak).join(' '); $('sust').textContent=fmtSpeed(r.dl).join(' ');
-  $('multi').textContent=fmtSpeed(r.single).join(' ')+' → '+fmtSpeed(r.dl).join(' ')+' ('+(r.dl/r.single).toFixed(1)+'×)';
+  $('multi').textContent=fmtSpeed(r.single).join(' ')+' to '+fmtSpeed(r.dl).join(' ')+' ('+(r.dl/r.single).toFixed(1)+'×)';
   renderUses(r);
 }
 function renderHistory(){
