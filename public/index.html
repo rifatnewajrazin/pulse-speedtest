@@ -54,7 +54,7 @@ header{display:flex;flex-direction:column;align-items:center;gap:var(--space-3);
 .seg button.on{background:#f6eee2;color:#1a0f06;opacity:1}
 .eyebrow{display:inline-flex;gap:var(--space-2);align-items:center;color:var(--mut);font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:var(--space-4)}
 .eyebrow:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--a);box-shadow:0 0 8px var(--a)}
-.headline{font-size:clamp(34px,6.4vw,72px);line-height:1.08;font-weight:800;letter-spacing:-.035em;text-transform:uppercase;margin:var(--space-4) auto;
+.headline{font-size:clamp(30px,4vw,48px);line-height:1.08;font-weight:800;letter-spacing:-.035em;text-transform:uppercase;margin:var(--space-4) auto;
   background:linear-gradient(180deg,#fff8ec 30%,#c9b79c);-webkit-background-clip:text;background-clip:text;color:transparent}
 .intro{max-width:560px;margin:0 auto var(--space-6);color:#f6eee2dd;font-size:16px}
 
@@ -81,7 +81,7 @@ header{display:flex;flex-direction:column;align-items:center;gap:var(--space-3);
 .gauge.live #arcGlow{animation:breathe 1.6s ease-in-out infinite}
 @keyframes breathe{50%{opacity:.55}}
 .gval{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.gval b{font-size:52px;letter-spacing:-.04em;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 24px #f28a2e66;transition:text-shadow .4s}
+.gval b{font-size:60px;letter-spacing:-.04em;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 24px #f28a2e66;transition:text-shadow .4s}
 .gval span{color:var(--mut);font-size:14px;margin-top:var(--space-1)}
 .gval em{font-style:normal;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--b);font-weight:700;margin-bottom:var(--space-2)}
 /* primary button: glow comes from the button's own cream fill, kept close and restrained */
@@ -107,7 +107,7 @@ canvas{width:100%;height:120px;display:block;margin-top:var(--space-4);transform
 /* sections */
 h2{font-size:12px;line-height:16px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;margin:var(--space-10) 0 var(--space-4)}
 h2:before{content:"";display:inline-block;vertical-align:middle;width:8px;height:8px;margin:0 var(--space-3) 2px 0;background:var(--a);box-shadow:0 0 12px var(--a)}
-#isp{margin-top:var(--space-4);display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:var(--space-6)}
+#isp{margin-top:var(--space-10);display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:var(--space-6)}
 #isp>div{flex:1 1 180px;min-width:0;max-width:100%}
 #ispName{font-size:22px;line-height:28px}
 #ispSrvNote{flex:1 1 100%;max-width:620px;margin:0 auto;font-size:12px}
@@ -196,7 +196,7 @@ header{flex-direction:row;justify-content:space-between}
       <div class="gval"><em id="phase">Ready</em><b id="big">0</b><span id="bigUnit">Mbps</span></div>
     </div>
     <button class="go" id="go">Start test</button>
-    <p class="note mt-2" id="status" role="status" aria-live="polite">Tests latency, download, upload, disk and your IP.</p>
+    <p class="note mt-2" id="status" role="status" aria-live="polite">Takes about 30 seconds and uses real data, 100 MB or more on a fast line. Avoid it on a limited mobile plan.</p>
     <div class="actions"><button class="ghost" id="copy" hidden>Copy results</button></div>
   </div>
   <div>
@@ -211,6 +211,9 @@ header{flex-direction:row;justify-content:space-between}
   </div>
 </section>
 
+<h2>What you can actually do</h2>
+<div id="uses"><div class="card note">Run the test to see this.</div></div>
+
 <section class="card" id="isp">
   <div><span class="label">Your internet provider</span><div class="big" id="ispName">Detecting…</div><p class="note" id="ispSub"></p></div>
   <div><span class="label">IP address</span><div class="big wrap-any" id="ispIp">-</div><p class="note" id="ispIp6"></p></div>
@@ -219,9 +222,6 @@ header{flex-direction:row;justify-content:space-between}
   <div><span class="label">Test server</span><div class="big" id="ispSrv">-</div><p class="note" id="ispSrvSub"></p></div>
   <p class="note" id="ispSrvNote" hidden></p>
 </section>
-
-<h2>What you can actually do</h2>
-<div id="uses"><div class="card note">Run the test to see this.</div></div>
 
 <h2>Speed stability</h2>
 <div class="grid">
@@ -321,6 +321,7 @@ function buildTicks(){ const g=$('ticks'); const ns='http://www.w3.org/2000/svg'
   for(let i=0;i<NT;i++){ const ang=(135+270*i/(NT-1))*Math.PI/180, big=i%6===0, r1=big?84:88, r2=98; const l=document.createElementNS(ns,'line');
     l.setAttribute('x1',110+r1*Math.cos(ang));l.setAttribute('y1',110+r1*Math.sin(ang));l.setAttribute('x2',110+r2*Math.cos(ang));l.setAttribute('y2',110+r2*Math.sin(ang));l.setAttribute('class','tk');g.appendChild(l);tickEls.push(l);} }
 let _tgt=0,_cur=0,_raf=0,_lbl=null;
+let PHASE_MS=false,CANCEL=false; // PHASE_MS: the gauge shows latency in ms instead of a speed. CANCEL: the visitor pressed Stop.
 const _c0=[242,138,46],_c1=[255,227,179];
 function gauge(mbps,label,phase){ _tgt=mbps; if(phase) $('phase').textContent=phase; if(!_raf) _raf=requestAnimationFrame(_step); }
 function _step(){
@@ -332,7 +333,7 @@ function _step(){
   const d=(f*75).toFixed(2)+' 100'; $('arc').setAttribute('stroke-dasharray',d); $('arcGlow').setAttribute('stroke-dasharray',d);
   const o=f>0?1:0; $('arc').style.opacity=o*.9; $('arcGlow').style.opacity=o*.9;
   document.querySelector('.gauge').classList.toggle('live',f>0);
-  const [v,u]=fmtSpeed(_cur); $('big').textContent=v; $('bigUnit').textContent=u;
+  if(!PHASE_MS){ const [v,u]=fmtSpeed(_cur); $('big').textContent=v; $('bigUnit').textContent=u; }
   _raf=_cur===_tgt?0:requestAnimationFrame(_step);
 }
 buildTicks();
@@ -343,7 +344,7 @@ function drawChart(){
   const x=c.getContext('2d'), W=c.width, H=c.height;
   x.clearRect(0,0,W,H);
   const all=[...chartData.dl,...chartData.ul]; const max=Math.max(10,...all)*1.1;
-  $('chartMax').textContent=all.length?'Top line = '+fmtSpeed(max).join(' '):'';
+  $('chartMax').textContent=all.length?'Chart scale: 0 to '+fmtSpeed(max).join(' '):'';
   x.strokeStyle='#ffffff18'; x.lineWidth=1;
   for(let i=1;i<4;i++){x.beginPath();x.moveTo(0,H*i/4);x.lineTo(W,H*i/4);x.stroke();}
   const line=(d,color)=>{ if(d.length<2)return; const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,color+'55');g.addColorStop(1,color+'00');
@@ -372,9 +373,9 @@ async function pingOnce(timeout=2000){
   try{ const r=await fetch(EP('ping')+'?'+Math.random(),{cache:'no-store',signal:ac.signal}); const ms=performance.now()-t0; if(!SERVER.fn) noteServer(r); return ms; }
   catch{ return null } finally{ clearTimeout(to) }
 }
-async function pingSeries(n, gap=60){
+async function pingSeries(n, gap=60, onPing){
   const arr=[]; let lost=0;
-  for(let i=0;i<n;i++){ const r=await pingOnce(); r==null?lost++:arr.push(r); await sleep(gap); }
+  for(let i=0;i<n&&!CANCEL;i++){ const r=await pingOnce(); r==null?lost++:arr.push(r); onPing&&onPing(r); await sleep(gap); }
   return {arr,lost,total:n};
 }
 const jitterOf = a => a.length<2?0:a.slice(1).reduce((s,v,i)=>s+Math.abs(v-a[i]),0)/(a.length-1);
@@ -386,7 +387,7 @@ async function bbPing(timeout=2000){
   try{ await fetch(bbUrl()+'?'+Math.random(),{cache:'no-store',signal:ac.signal}); return performance.now()-t0; }
   catch{ return null } finally{ clearTimeout(to) }
 }
-async function bbIdle(n=10){ await bbPing(4000); const a=[]; for(let i=0;i<n;i++){ const r=await bbPing(); if(r!=null)a.push(r); await sleep(60);} return median(a); }
+async function bbIdle(n=10){ await bbPing(4000); const a=[]; for(let i=0;i<n&&!CANCEL;i++){ const r=await bbPing(); if(r!=null)a.push(r); await sleep(60);} return median(a); }
 function loadedPinger(){
   const arr=[]; let lost=0, on=true;
   (async()=>{ while(on){ const r=await bbPing(3000); if(!on)break; r==null?(lost++,arr.push(3000)):arr.push(r); await sleep(250);} })();
@@ -402,7 +403,7 @@ async function downloadTest(streams, seconds, warm, onTick){
     }catch{ if(ac.signal.aborted)return; DLFAIL++; await sleep(100);} } };
   const ws=Array.from({length:streams},work);
   let last=t0,lastB=0,win=[];
-  while(performance.now()-t0<seconds*1000){
+  while(performance.now()-t0<seconds*1000&&!CANCEL){
     await sleep(100); const now=performance.now(); const inst=(bytes-lastB)*8/((now-last)/1000)/1e6; last=now; lastB=bytes;
     win.push(inst); if(win.length>5)win.shift(); const smooth=win.reduce((a,b)=>a+b,0)/win.length;
     const steady=now-t0>warm*1000; if(steady) samples.push(smooth); onTick&&onTick(smooth,steady);
@@ -434,7 +435,7 @@ function uploadTest(streams, seconds, warm, onTick){
       const sm=(b-hist[0][1])*8/Math.max(0.1,(now-hist[0][0])/1000)/1e6;
       if(tw===null&&now-t0>=warm*1000){tw=now;bw=b;}
       if(tw!==null) samples.push(sm); onTick&&onTick(sm,tw!==null);
-      if(now-t0>seconds*1000){ stop=true; clearInterval(iv); const tb=total(); xhrs.forEach(x=>x&&x.abort());
+      if(now-t0>seconds*1000||CANCEL){ stop=true; clearInterval(iv); const tb=total(); xhrs.forEach(x=>x&&x.abort());
         const from=tw??t0, bf=tw!==null?bw:0; samples.final=(tb-bf)*8/Math.max(0.5,(now-from)/1000)/1e6; resolve(samples); } },100);
   });
 }
@@ -557,31 +558,47 @@ function renderHistory(){
   if(!h.length) return;
   $('hist').innerHTML=h.slice(0,5).map(x=>`<tr><td>${new Date(x.t).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td><td>${fmtSpeed(x.dl).join(' ')}</td><td>${fmtSpeed(x.ul).join(' ')}</td><td>${Math.round(x.p)} ms</td></tr>`).join('');
 }
+// Puts every measured value back to its empty state (used when the visitor stops a test, so no half-result is left on screen).
+// Leaves the ms readout and puts the speed readout back straight away (no wait for the next animation frame).
+function endMsPhase(){ PHASE_MS=false; const [v,u]=fmtSpeed(_cur); $('big').textContent=v; $('bigUnit').textContent=u; }
+function clearRun(){
+  ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='-'); ['pIdle','pDl','pUl'].forEach(i=>$(i).textContent='-');
+  $('dlSub').textContent='Getting data from the internet'; $('ulSub').textContent='Sending data to the internet'; $('jit').textContent='Jitter -'; $('lossSub').textContent='No reply within 2 s';
+  chartData.dl=[];chartData.ul=[]; drawChart(); results=null;
+}
+function stopRun(){ if(!RUNNING||CANCEL) return; CANCEL=true; const b=$('go'); b.disabled=true; b.textContent='Stopping…'; $('status').textContent='Stopping…'; }
 async function run(){
-  if(RUNNING) return; RUNNING=true;
+  if(RUNNING) return; RUNNING=true; CANCEL=false;
+  const btn=$('go'); btn.textContent='Stop test'; $('status').textContent='Starting…';
   await pickServer();
-  let wl=null; try{ wl=await navigator.wakeLock?.request('screen'); }catch{}
-  const btn=$('go'); btn.disabled=true; btn.textContent='Testing…'; $('copy').hidden=true; chartData.dl=[];chartData.ul=[]; drawChart();
+  let wl=null, sp=null; try{ wl=await navigator.wakeLock?.request('screen'); }catch{}
+  const chk=()=>{ if(CANCEL) throw new Error('stopped'); };
+  $('copy').hidden=true; chartData.dl=[];chartData.ul=[]; drawChart();
   ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='-'); $('ulSub').textContent='Sending data to the internet'; $('dlSub').textContent='Getting data from the internet'; results={};
   try{
-    $('status').textContent='Measuring latency…'; gauge(0,'','Ping');
-    DLFAIL=0; const idle=await pingSeries(20,40); const idleMed=median(idle.arr)||0; const jit=jitterOf(idle.arr); const loss=idle.lost/idle.total*100;
+    chk();
+    // The latency phase shows milliseconds on the gauge (a running median), not a speed.
+    $('status').textContent='Measuring latency…'; PHASE_MS=true; gauge(0,'','Ping'); $('big').textContent='0'; $('bigUnit').textContent='ms';
+    const seen=[]; DLFAIL=0; const idle=await pingSeries(20,40,r=>{ if(r!=null){ seen.push(r); $('big').textContent=median(seen).toFixed(0); } });
+    chk();
+    const idleMed=median(idle.arr)||0; const jit=jitterOf(idle.arr); const loss=idle.lost/idle.total*100;
     $('ping').innerHTML=idleMed.toFixed(0)+'<u>ms</u>'; $('jit').textContent='Jitter '+jit.toFixed(1)+' ms'; $('loss').innerHTML=loss.toFixed(1)+'<u>%</u>'; $('lossSub').textContent=idle.lost+' of '+idle.total+' got no reply';
-    const bbBase=await bbIdle(10)||idleMed;
+    const bbBase=await bbIdle(10)||idleMed; chk();
     $('pIdle').textContent=bbBase.toFixed(0)+' ms';
 
-    $('status').textContent='Testing one connection…';
-    const single=median(await downloadTest(1,3,1,m=>gauge(m,'','Download')))||1;
+    endMsPhase(); gauge(0,'','Download'); $('status').textContent='Testing one connection…';
+    const single=median(await downloadTest(1,3,1,m=>gauge(m,'','Download')))||1; chk();
     $('status').textContent='Testing download…';
-    const stopDl=loadedPinger();
+    const stopDl=sp=loadedPinger();
     const dls=await downloadTest(4,8,2,(m,steady)=>{gauge(m,'','Download'); if(steady){chartData.dl.push(m);drawChart();}});
-    const lp=stopDl(); const dlPing=median(lp.arr)||bbBase;
+    const lp=stopDl(); chk(); const dlPing=median(lp.arr)||bbBase;
     const dl=median(dls)||0, peak=[...dls].sort((a,b)=>b-a)[Math.floor(dls.length*0.05)]||dl;
     setSpeed('dl',dl); $('pDl').textContent=dlPing.toFixed(0)+' ms'; $('dlSub').textContent=DLFAIL>2?'Server cut off '+DLFAIL+' downloads, may read a bit low':'Median after warm‑up';
 
-    UPFAIL=0;UPERR=0; $('status').textContent='Testing upload…'; const stopUl=loadedPinger();
+    UPFAIL=0;UPERR=0; $('status').textContent='Testing upload…'; const stopUl=sp=loadedPinger();
     const uls=await uploadTest(4,8,2,(m,steady)=>{gauge(m,'','Upload'); if(steady){chartData.ul.push(m);drawChart();}});
-    const up=stopUl(); const ulPing=median(up.arr)||bbBase; const ul=uls.final||0;
+    const up=stopUl(); chk(); const ulPing=median(up.arr)||bbBase; const ul=uls.final||0;
+    btn.disabled=true; btn.textContent='Finishing…'; // the short disk and IP checks can't be cancelled cleanly, and the speeds are already measured
     if(!(ul>0)) $('ulSub').textContent=UPERR?'Upload blocked by server (HTTP '+UPERR+')':UPFAIL?'Upload connection failed, retry':'No upload data measured';
     else $('ulSub').textContent=UPFAIL>2?'Server cut off '+UPFAIL+' uploads, may read a bit low':'Average after warm‑up';
     setSpeed('ul',ul); $('pUl').textContent=ulPing.toFixed(0)+' ms';
@@ -611,11 +628,17 @@ async function run(){
     $('status').textContent='Done at '+new Date().toLocaleTimeString()+($('localWarn').hidden?'':' (local test, not internet speed)'); $('phase').textContent='Complete';
     try{const h=JSON.parse(localStorage.pulse||'[]'); h.unshift({t:Date.now(),dl,ul,p:idleMed}); localStorage.pulse=JSON.stringify(h.slice(0,10));}catch{}
     renderHistory(); $('copy').hidden=false;
-  }catch(e){ $('status').textContent='Test failed: '+e.message; }
+  }catch(e){
+    try{ sp&&sp(); }catch{}
+    if(CANCEL){ clearRun(); $('status').textContent='Test stopped. Nothing was saved.'; endMsPhase(); gauge(0,'','Ready'); }
+    else $('status').textContent='Test failed: '+e.message;
+  }
+  if(PHASE_MS) endMsPhase();
   try{ wl&&wl.release(); }catch{}
-  btn.disabled=false; btn.textContent='Test again'; RUNNING=false;
+  const stopped=CANCEL; CANCEL=false;
+  btn.disabled=false; btn.textContent=stopped?'Start test':'Test again'; RUNNING=false;
 }
-$('go').onclick=run;
+$('go').onclick=()=>RUNNING?stopRun():run();
 $('copy').onclick=async()=>{ const r=results; if(!r||r.dl==null) return;
   const f=m=>fmtSpeed(m).join(' ');
   const txt=`Pulse speed test, ${new Date().toLocaleString()}\nDownload: ${f(r.dl)} (peak ${f(r.peak)})\nUpload: ${f(r.ul)}\nPing: ${r.ping.toFixed(0)} ms · Jitter ${r.jitter.toFixed(1)} ms · Dropped pings ${r.loss.toFixed(1)}%\nBufferbloat: ${bbGrade(r).txt}\nServer: ${$('ispSrv').textContent}\nIP check: ${r.ip?.title||'-'}\n${location.origin}`;
