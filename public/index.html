@@ -278,7 +278,7 @@ h2{font-size:14px;line-height:20px}
     <thead><tr><th></th><th>Fast.com (Netflix)</th><th>Speedtest (Ookla)</th><th>Pulse (this site)</th></tr></thead>
     <tbody>
     <tr><td><b>What it answers</b></td><td>“How fast is Netflix-style streaming for me?”</td><td>“What is the max my line can do?”</td><td>Speed to <i>this</i> server + full health check</td></tr>
-    <tr><td><b>Test server</b></td><td>Netflix Open Connect boxes, often inside your ISP’s network</td><td>Nearby server you (or it) pick, often run by an ISP</td><td>The Cloudflare server your ISP reaches (Mumbai for most Bangladeshi ISPs)</td></tr>
+    <tr><td><b>Test server</b></td><td>Netflix Open Connect boxes, often inside your ISP’s network</td><td>Nearby server you (or it) pick, often run by an ISP</td><td>The Cloudflare server your ISP reaches (the city varies by ISP and time of day, see Test server above)</td></tr>
     <tr><td><b>Connections</b></td><td>Fewer parallel connections, plain HTTPS downloads</td><td>Many parallel connections, tuned to fill your line</td><td>4 parallel down, 4 up</td></tr>
     <tr><td><b>Averaging</b></td><td>Averages the whole test, stricter</td><td>Drops the slowest &amp; fastest slices, favours peak</td><td>Download: median after warm-up, peak shown. Upload: average after warm-up</td></tr>
     <tr><td><b>Typical result</b></td><td>Lower, closer to real streaming</td><td>Higher, closer to advertised “up to” speed</td><td>Depends on server distance</td></tr>
@@ -372,13 +372,13 @@ const EP=p=>USE_EDGE?EDGE_BASE+({ping:'/ping',up:'/up',ip:'/ip'}[p]):({ping:'/ap
 const DLURL=()=>USE_EDGE?`${EDGE_BASE}/down?bytes=8000000&r=${Math.random()}`:`/dl.bin?r=${Math.random()}`;
 async function pickServer(){ if(!EDGE_BASE) return; try{ const ac=new AbortController(); setTimeout(()=>ac.abort(),2500); const r=await fetch(EDGE_BASE+'/ping?'+Math.random(),{cache:'no-store',signal:ac.signal}); if(r.ok||r.status===204){ USE_EDGE=true; SERVER.fn=null; } }catch{} }
 const SERVER={edge:null,fn:null};
-const REGIONS={DAC:'Dhaka, Bangladesh',CGP:'Chittagong, Bangladesh',ZYL:'Sylhet, Bangladesh',CCU:'Kolkata, India',BOM:'Mumbai, India',MAA:'Chennai, India',SIN:'Singapore',HKG:'Hong Kong',DEL:'Delhi, India',KUL:'Kuala Lumpur',bom1:'Mumbai, India',sin1:'Singapore',hkg1:'Hong Kong',iad1:'Washington DC, USA',sfo1:'San Francisco, USA',cdg1:'Paris, France',fra1:'Frankfurt, Germany',lhr1:'London, UK',syd1:'Sydney, Australia',hnd1:'Tokyo, Japan',dxb1:'Dubai, UAE',cle1:'Cleveland, USA',pdx1:'Portland, USA',gru1:'São Paulo, Brazil',icn1:'Seoul, South Korea',kix1:'Osaka, Japan',arn1:'Stockholm, Sweden',dub1:'Dublin, Ireland',cpt1:'Cape Town, South Africa'};
+const REGIONS={DAC:'Dhaka, Bangladesh',CGP:'Chittagong, Bangladesh',ZYL:'Sylhet, Bangladesh',CCU:'Kolkata, India',BOM:'Mumbai, India',MAA:'Chennai, India',SIN:'Singapore',HKG:'Hong Kong',DEL:'Delhi, India',KUL:'Kuala Lumpur',DUS:'Düsseldorf, Germany',FRA:'Frankfurt, Germany',MUC:'Munich, Germany',HAM:'Hamburg, Germany',AMS:'Amsterdam, Netherlands',LHR:'London, UK',MAN:'Manchester, UK',CDG:'Paris, France',MRS:'Marseille, France',MXP:'Milan, Italy',MAD:'Madrid, Spain',VIE:'Vienna, Austria',ZRH:'Zurich, Switzerland',WAW:'Warsaw, Poland',PRG:'Prague, Czechia',ARN:'Stockholm, Sweden',HEL:'Helsinki, Finland',BRU:'Brussels, Belgium',DXB:'Dubai, UAE',DOH:'Doha, Qatar',BAH:'Bahrain',KHI:'Karachi, Pakistan',LHE:'Lahore, Pakistan',BLR:'Bangalore, India',HYD:'Hyderabad, India',CMB:'Colombo, Sri Lanka',BKK:'Bangkok, Thailand',CGK:'Jakarta, Indonesia',MNL:'Manila, Philippines',NRT:'Tokyo, Japan',KIX:'Osaka, Japan',ICN:'Seoul, South Korea',SYD:'Sydney, Australia',JNB:'Johannesburg, South Africa',LAX:'Los Angeles, USA',JFK:'New York, USA',IAD:'Washington DC, USA',ORD:'Chicago, USA',SEA:'Seattle, USA',bom1:'Mumbai, India',sin1:'Singapore',hkg1:'Hong Kong',iad1:'Washington DC, USA',sfo1:'San Francisco, USA',cdg1:'Paris, France',fra1:'Frankfurt, Germany',lhr1:'London, UK',syd1:'Sydney, Australia',hnd1:'Tokyo, Japan',dxb1:'Dubai, UAE',cle1:'Cleveland, USA',pdx1:'Portland, USA',gru1:'São Paulo, Brazil',icn1:'Seoul, South Korea',kix1:'Osaka, Japan',arn1:'Stockholm, Sweden',dub1:'Dublin, Ireland',cpt1:'Cape Town, South Africa'};
 function noteServer(r){ const id=r.headers.get('x-vercel-id')||''; const p=id.split('::'); const fn=r.headers.get('x-pulse-region')||p[0]||null; SERVER.edge=p[0]||null; SERVER.fn=fn;
   const el=$('ispSrv'); if(el&&fn){ el.textContent=REGIONS[fn]||fn; const sub=$('ispSrvSub'); if(sub) sub.textContent='Region '+fn+(SERVER.edge&&SERVER.edge!==fn?' · entry '+SERVER.edge:''); } srvNote(); }
 // Cloudflare serves free-plan traffic from most Bangladeshi ISPs out of Mumbai/Singapore, not its Dhaka PoP.
 function srvNote(){ const el=$('ispSrvNote'); if(!el) return; const fn=SERVER.fn;
   el.textContent=fn&&PUB?.country_code==='BD'&&!/^(DAC|CGP|ZYL)$/.test(fn)
-    ?'Why not Dhaka? Cloudflare routes most Bangladeshi ISPs to '+(REGIONS[fn]||fn).split(',')[0]+' for sites like this one, so ping here is higher than on tests that use a server inside Bangladesh. Speeds are still accurate for everyday browsing.':''; el.hidden=!el.textContent; }
+    ?'Why not Dhaka? For sites like this one, Cloudflare sent your connection to '+(REGIONS[fn]||fn).split(',')[0]+', so ping here is higher than on tests that use a server inside Bangladesh. The city depends on your ISP and the time of day. Speeds are still accurate for everyday browsing.':''; el.hidden=!el.textContent; }
 async function pingOnce(timeout=2000){
   const t0=performance.now(), ac=new AbortController(), to=setTimeout(()=>ac.abort(),timeout);
   try{ const r=await fetch(EP('ping')+'?'+Math.random(),{cache:'no-store',signal:ac.signal}); const ms=performance.now()-t0; if(!SERVER.fn) noteServer(r); return ms; }
@@ -571,7 +571,19 @@ function renderHistory(){
 // Puts every measured value back to its empty state (used when the visitor stops a test, so no half-result is left on screen).
 // Leaves the ms readout and puts the speed readout back straight away (no wait for the next animation frame).
 function endMsPhase(){ PHASE_MS=false; const [v,u]=fmtSpeed(_cur); $('big').textContent=v; $('bigUnit').textContent=u; }
+// Puts the verdict, stability, bufferbloat, IP, conversion and comparison cards back to their pre-test state.
+function resetResultCards(){
+  $('uses').innerHTML='<div class="card note">Run the test to see this.</div>';
+  ['realTitle','bbTitle','ipTitle'].forEach(i=>$(i).innerHTML='');
+  $('realTxt').textContent='We compare your peak speed with what you can sustain, and check whether things slow down when the line is busy.';
+  ['peak','sust','stab','multi'].forEach(i=>$(i).textContent='-'); $('multiNote').textContent='';
+  $('ipTxt').textContent='Checks whether your address looks like your own, shared with other customers, or hidden behind a VPN.';
+  $('ipRows').innerHTML=''; $('ipChecks').innerHTML='<p class="note">Public address, shared IP, VPN and timezone checks appear here after the test.</p>';
+  $('conv').innerHTML='<tr><td colspan="3" class="note">Run the test to see conversions.</td></tr>';
+  $('compareMine').innerHTML=''; $('diskNote').textContent='Saving data to your storage. Measured through the browser, so real-world results can be higher.';
+}
 function clearRun(){
+  resetResultCards();
   ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='-'); ['pIdle','pDl','pUl'].forEach(i=>$(i).textContent='-');
   $('dlSub').textContent='Getting data from the internet'; $('ulSub').textContent='Sending data to the internet'; $('jit').textContent='Jitter -'; $('lossSub').textContent='No reply within 2 s';
   chartData.dl=[];chartData.ul=[]; drawChart(); results=null;
@@ -583,7 +595,7 @@ async function run(){
   await pickServer();
   let wl=null, sp=null; try{ wl=await navigator.wakeLock?.request('screen'); }catch{}
   const chk=()=>{ if(CANCEL) throw new Error('stopped'); };
-  $('copy').hidden=true; chartData.dl=[];chartData.ul=[]; drawChart();
+  $('copy').hidden=true; clearRun();
   ['dl','ul','ping','loss','rd','wr'].forEach(i=>$(i).textContent='-'); $('ulSub').textContent='Sending data to the internet'; $('dlSub').textContent='Getting data from the internet'; results={};
   try{
     chk();
