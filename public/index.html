@@ -140,6 +140,13 @@ details p b{color:var(--txt)}
 footer{margin-top:var(--space-10);color:var(--mut);font-size:12px;line-height:20px}
 
 /* responsive */
+/* wide screens: gauge and Start on the left, live numbers and chart on the right, so the readings stay in view during a test */
+@media(min-width:901px){
+.hero{grid-template-columns:minmax(300px,340px) 1fr;align-items:center;justify-items:stretch;gap:var(--space-8)}
+.hero>div{max-width:none}
+.hero .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:901px) and (max-height:860px){.gauge{max-width:296px}.gval b{font-size:52px}} /* keep Start test on the first screen of shorter laptop windows */
 @media(max-width:900px){#uses>.v,#uses>.a{grid-column:span 6}#uses>.a:last-child{grid-column:span 12}}
 @media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){
